@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var nodemailer = require('nodemailer');
+const shortid = require('shortid');
 
 
 //var db = require("../database/test.js");
@@ -38,6 +39,7 @@ router.post('/adduser', function(req, res, next) {
   }
   //check if existing username
   db.user.findOne({username}).then(result =>{
+    console.log(result);
     if(result != null)
     {
       req.flash('error_msg', 'Username already exists.');
@@ -53,7 +55,7 @@ router.post('/adduser', function(req, res, next) {
         return;
       }
       // add into db
-      var userobj = {username,password,email,verified: false};
+      var userobj = {username,password,email,verified: false,posts: []};
       db.user.insertOne(userobj);
 
       //send verification 
@@ -78,11 +80,12 @@ router.post('/adduser', function(req, res, next) {
           return;
         } else {
           console.log('Email sent: ' + info.response);
+          req.flash('success_msg','You are now registered. Please verify with the key send to your email.');
+          res.status(200).send({"status": "OK"});
         }
       });
       //console.log("success");
-      req.flash('success_msg','You are now registered. Please verify with the key send to your email.');
-      res.status(200).send({"status": "OK"});
+
     
     },err =>{
       console.log("error in findOne email" + err);
@@ -171,6 +174,12 @@ router.get('/login', function(req, res, next) {
       return;
     }
     console.log(result);
+    if(result.verified == false)
+    {
+      req.flash('error_msg', 'You are not verified. Please check your email for the verification key.');
+      res.status(400).send({ "status": "error", "error": "Unverified account " + username + " at /login" });
+      return;
+    }
     if(result.password == password)
     {
       console.log("success login credentials");
@@ -184,21 +193,94 @@ router.get('/login', function(req, res, next) {
  });
  router.post('/logout', function(req, res, next) {
   console.log(req.session.username);
+  if(req.session.username == null)
+  {
+    //req.flash('error_msg', 'No user to log out.');
+    res.status(400).send({ "status": "error", "error": "No username to logout at /logout" });
+    return;
+  }
   req.session.destroy((err) =>{
     if(err){
       req.flash('error_msg', 'Error in destroying session.');
       res.status(400).send({ "status": "error", "error": "Error in destroying session /logout" });
       return;
     }
-  })
+    req.flash('success_msg','You are logged out. ');
+    res.status(200).send({"status": "OK"});
+    return;
+  });
+
  });
 
-router.get('/dashboard',function(req,res,next){
-  res.render('dashboard');
+router.get('/additem',function(req,res,next){
+  res.render('additem');
 });
-router.get('/dashboard',function(req,res,next){
-  //res.render('dashboard');
-  console.log(req.session.username)
+router.post('/additem',function(req,res,next){
+  console.log("Adding an item " + req.session.username);
+  const {content, childType} = req.body;
+  if(req.session.username == null)
+  {
+     req.flash('error_msg', 'Please log in to add an item.');
+     res.status(400).send({ "status": "error", "error": "User is not logged in to add item at /additem" });
+     return;
+  }
+  if(content == null)
+  {
+    req.flash('error_msg', 'Missing content information.');
+    res.status(400).send({ "status": "error", "error": "Missing content parameters at /additem" });
+    return;
+  }
+
+  //create item
+  var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,timestamp : Date.now()/1000};
+  db.post.insertOne(postobj);
+
+  //update user
+  const query = { username:req.session.username};
+  const update_verified = { $push: {posts: postobj}};
+  const options = {upsert:false};
+  db.user.updateOne(query,update_verified,options).then(result =>{
+
+    if(result.matchedCount == 0 || result.modifiedCount == 0)
+      console.log("updateOne unable to match query or modify the document at /additem");
+
+    req.flash('success_msg','You successfully made a post. ');
+    res.status(200).send({"status": "OK","id":postobj.id});
+    return;
+  },err => {
+    console.log("updateOne failed " + err);
+  });
+
+});
+
+router.get('/item/:id',function(req,res,next){
+  let item_id = req.params.id;
+  console.log(item_id);
+  db.post.findOne({id : item_id}).then(result =>{
+    if(result == null)
+    {
+      req.flash('error_msg', 'Unable to find post with id: ' + item_id + '.');
+      res.status(400).send({ "status": "error", "error": "Unable to find post with id: " + item_id + "at /item/" + item_id });
+      return;
+    }
+    //req.flash('success_msg','S. ');
+    res.status(200).send({"status": "OK","item":result});
+    return;
+  });
+});
+
+router.post('/search',function(req,res,next){
+  const {timestamp,limit} = req.body;
+  let search_limit = 25;
+  if(timestamp == null)
+  {
+    req.flash('error_msg', 'Missing timestamp input.');
+    res.status(400).send({ "status": "error", "error": "Missing timestamp parameters at /search" });
+    return;
+  }
+  if(limit != null && limit > 0 && limit <= 100)
+    search_limit = limit;
+    
 });
 
 

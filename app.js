@@ -15,7 +15,7 @@ var url = "mongodb://130.245.171.203:27017/";
 var client = new MongoClient(url,{useUnifiedTopology:true});
 
 client.connect(function(err,db){
-  console.log("Database created!");
+  //console.log("Database created!");
   var testdb = db.db("testdb");
   //console.log(MongoClient.showdbs());
 
@@ -25,10 +25,12 @@ client.connect(function(err,db){
  
   testdb.createCollection("users",function(err,res){
       if(err) throw err;
-      console.log("users collection created!");
-      var user= testdb.collection("users");
+      //console.log("users collection created!");
+      var user = testdb.collection("users");
+      var post = testdb.collection("posts");
       //console.log(user);
       exports.user = user;
+      exports.post = post;
      
       //testdb.close();
   });
