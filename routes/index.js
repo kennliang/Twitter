@@ -280,6 +280,13 @@ router.post('/search',function(req,res,next){
   }
   if(limit != null && limit > 0 && limit <= 100)
     search_limit = limit;
+
+  let sorter = {timestamp: -1};
+  let query = {timestamp: {$lte: timestamp}};
+  db.post.find(query).sort(sorter).limit(search_limit).toArray(function(err,result){
+    console.log(result);
+    res.status(200).send({"status": "OK","items":result});
+  });
     
 });
 
