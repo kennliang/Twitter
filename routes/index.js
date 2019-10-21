@@ -272,12 +272,9 @@ router.get('/item/:id',function(req,res,next){
 router.post('/search',function(req,res,next){
   const {timestamp,limit} = req.body;
   let search_limit = 25;
-  if(timestamp == null)
-  {
-    req.flash('error_msg', 'Missing timestamp input.');
-    res.status(400).send({ "status": "error", "error": "Missing timestamp parameters at /search" });
-    return;
-  }
+  let search_time = Date.now()/1000;
+  if(timestamp != null)
+    search_time = timestamp;
   if(limit != null && limit > 0 && limit <= 100)
     search_limit = limit;
 
