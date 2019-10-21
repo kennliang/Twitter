@@ -188,6 +188,10 @@ router.get('/login', function(req, res, next) {
       req.flash('success_msg','You are logged in. ');
       res.status(200).send({"status": "OK"});
     }
+    req.flash('error_msg', 'Invalid password.Please try again.');
+    res.status(400).send({ "status": "error", "error": "Invalid password for  " + username + " at /login" });
+    return;
+    
    });
  
  });
