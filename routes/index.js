@@ -18,7 +18,7 @@ router.get('/', function(req, res, next) {
     console.log("inserted document");
     //console.log("list of collections " + testdb.listCollections());
 });*/
-  res.render('index');
+  res.render('index',{ok:'test'});
 });
 
 router.get('/adduser', function(req, res, next) {
@@ -169,7 +169,7 @@ router.get('/login', function(req, res, next) {
    db.user.findOne({username}).then(result => {
     if(result == null)
     {
-      req.flash('error_msg', 'Unable to find ' + username + '.');
+      req.flash('error_msg', 'Unable to find username:' + username + '.');
       res.status(400).send({ "status": "error", "error": "Missing account username " + username + " at /login" });
       return;
     }
@@ -195,21 +195,33 @@ router.get('/login', function(req, res, next) {
    });
  
  });
+
+ router.get('/logout',function(req,res,next){
+   if(req.session.username != null)
+   {
+    res.render('logout');
+    return;
+   }
+   req.flash('error_msg','You are not logged in to log out');
+   res.redirect('login');
+   return;
+ });
+
  router.post('/logout', function(req, res, next) {
   console.log(req.session.username);
   if(req.session.username == null)
   {
-    //req.flash('error_msg', 'No user to log out.');
+    req.flash('error_msg', 'No user to log out.');
     res.status(400).send({ "status": "error", "error": "No username to logout at /logout" });
     return;
   }
   req.session.destroy((err) =>{
     if(err){
-      req.flash('error_msg', 'Error in destroying session.');
+      //req.flash('error_msg', 'Error in destroying session.');
       res.status(400).send({ "status": "error", "error": "Error in destroying session /logout" });
       return;
     }
-    req.flash('success_msg','You are logged out. ');
+    //req.flash('success_msg','You are logged out. ');
     res.status(200).send({"status": "OK"});
     return;
   });
@@ -217,7 +229,14 @@ router.get('/login', function(req, res, next) {
  });
 
 router.get('/additem',function(req,res,next){
-  res.render('additem');
+  if(req.session.username != null)
+  {
+    res.render('additem');
+    return;
+  }
+  req.flash('error_msg','Please log in to make a post');
+  res.redirect('login');
+  
 });
 router.post('/additem',function(req,res,next){
   console.log("Adding an item " + req.session.username);
@@ -257,6 +276,22 @@ router.post('/additem',function(req,res,next){
 
 });
 
+router.get('/post/:id',function(req,res,next){
+  let item_id = req.params.id;
+  console.log(item_id);
+  db.post.findOne({id : item_id}).then(result =>{
+    if(result == null)
+    {
+      req.flash('error_msg', 'Unable to find post with id: ' + item_id + '.');
+      res.status(400).send({ "status": "error", "error": "Unable to find post with id: " + item_id + "at /item/" + item_id });
+      return;
+    }
+    //req.flash('success_msg','S. ');
+    res.render('post',{post : result});
+    return;
+  });
+});
+
 router.get('/item/:id',function(req,res,next){
   let item_id = req.params.id;
   console.log(item_id);
@@ -273,32 +308,39 @@ router.get('/item/:id',function(req,res,next){
   });
 });
 
+router.get('/search',function(req,res,next){
+  res.render('search');
+});
+
 router.post('/search',function(req,res,next){
   const {timestamp,limit} = req.body;
   let search_limit = 25;
   let search_time = Date.now()/1000;
+  //console.log("inside the search post");
   if(timestamp != null)
     search_time = timestamp;
   if(limit != null && limit > 0 && limit <= 100)
     search_limit = limit;
+/*
+  if(typeof(search_limit) == 'string')
+    search_limit = Number(search_limit);
+  if(typeof(search_time) == 'string')
+    search_time = Number(search_time)
+
+  console.log(typeof(search_limit));
+  console.log(typeof(search_time));*/
+  
 
   let sorter = {timestamp: -1};
-  let query = {timestamp: {$lte: timestamp}};
+  let query = {timestamp: {$lte: search_time}};
   db.post.find(query).sort(sorter).limit(search_limit).toArray(function(err,result){
-    console.log(result);
+    if(err)
+      console.log("error in find /search " + err);
+    //console.log(result);
     res.status(200).send({"status": "OK","items":result});
   });
+  
     
 });
-
-
-
-
-
-
-
-
-
-
 
 module.exports = router;
