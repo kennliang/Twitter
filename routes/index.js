@@ -256,6 +256,7 @@ router.post('/follow',function(req,res,next){
       res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user session " + req.session.username });
       return;
     }
+    /*
     if(result.modifiedCount != 1)
     {
       if(follow_value){
@@ -268,6 +269,7 @@ router.post('/follow',function(req,res,next){
         return;
       }
     }
+    */
     //success update followers on user being followed
     const follower_query = {username :username};
     let follower_update;
@@ -290,12 +292,14 @@ router.post('/follow',function(req,res,next){
         res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user " + username });
         return;
       }
+      /*
       if(result.modifiedCount != 1)
       {
         req.flash('error_msg', "Unable to modify the username: " + username + " to update followers");
         res.status(400).send({ "status": "error", "error": "modified count is not one at updateOne at /follow for user  " + username });
         return;
       }
+      */
       if(follow_value)
       {
         req.flash('success_msg','You are now following ' + username + '.');
