@@ -30,7 +30,7 @@ router.get('/:username',function(req,res,next){
 router.get('/:username/posts',function(req,res,next){
   console.log("2231111");
   let username = req.params.username;
-  const {limit} = req.body;
+  const {limit} = req.query;
   let limit_post = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_post = limit;
@@ -56,7 +56,7 @@ router.get('/:username/posts',function(req,res,next){
 router.get('/:username/followers',function(req,res,next){
   console.log("223666666666");
   let username = req.params.username;
-  const {limit} = req.body;
+  const {limit} = req.query;
   let limit_username = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_username = limit;
@@ -85,7 +85,7 @@ router.get('/:username/followers',function(req,res,next){
 router.get('/:username/following',function(req,res,next){
   console.log("2434323");
   let username = req.params.username;
-  const {limit} = req.body;
+  const {limit} = req.query;
   let limit_username = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_username = limit;
