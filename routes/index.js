@@ -250,7 +250,7 @@ router.post('/follow',function(req,res,next){
       return;
     }
     console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
-    if(result.matchCount != 1)
+    if(result.matchedCount != 1)
     {
       req.flash('error_msg', "Unable to find the username: " + username + " to follow");
       res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user session " + req.session.username });
@@ -284,7 +284,7 @@ router.post('/follow',function(req,res,next){
       }
       console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
       //console.log("result is " + result);
-      if(result.matchCount != 1)
+      if(result.matchedCount != 1)
       {
         req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
         res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user " + username });
