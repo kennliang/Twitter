@@ -276,7 +276,7 @@ router.post('/follow',function(req,res,next){
     if(follow_value)
       follower_update = { $addToSet: {followers: req.session.username}};
      else
-      follower_update = { $pull: {followesr: req.session.username}};
+      follower_update = { $pull: {followers: req.session.username}};
     db.user.updateOne(follower_query,follower_update,options).then(result =>{
       if(result == null)
       {

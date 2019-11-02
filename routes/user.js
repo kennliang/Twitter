@@ -21,7 +21,8 @@ router.get('/:username',function(req,res,next){
       res.status(400).send({ "status": "error", "error": "Unable to find account with username " + username + " at /user/" + username });
       return;
     }
-    console.log(result);
+    console.log("Following " + result.following);
+    console.log("Followers " + result.followers)
     let info = {"email": result.email,"followers": result.followers.length,"following":result.following.length};
     res.status(200).send({"status": "OK","user": info});
   });
