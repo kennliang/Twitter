@@ -220,6 +220,7 @@ router.post('/search',function(req,res,next){
 });
 
 router.post('/follow',function(req,res,next){
+  
 
   console.log("following the parameters are user to follow " + req.body.username + " and current session user is " + req.session.username);
   const {username,follow} = req.body;
@@ -234,8 +235,41 @@ router.post('/follow',function(req,res,next){
     res.status(400).send({ "status": "error", "error": "User is not logged in to follow users" });
     return;
   }
-  const query = { username: req.session.username};
-  const options = {upsert:false};
+
+//update followers on user being followed
+
+const follower_query = {username :username};
+const options = {upsert:false};
+let follower_update;
+if(follow_value)
+  follower_update = { $addToSet: {followers: req.session.username}};
+ else
+  follower_update = { $pull: {followers: req.session.username}};
+db.user.updateOne(follower_query,follower_update,options).then(result =>{
+  if(result == null)
+  {
+    req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
+    res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user to update follow " + username });
+    return;
+  }
+  console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
+  //console.log("result is " + result);
+  if(result.matchedCount != 1)
+  {
+    req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
+    res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user " + username });
+    return;
+  }
+  
+  //if(result.modifiedCount != 1)
+  //{
+   // req.flash('error_msg', "Unable to modify the username: " + username + " to update followers");
+    //res.status(400).send({ "status": "error", "error": "modified count is not one at updateOne at /follow for user  " + username });
+    //return;
+  //}
+  
+ const query = { username: req.session.username};
+  
   let updates;
   if(follow_value)
     updates = { $addToSet: {following: username}};
@@ -256,68 +290,46 @@ router.post('/follow',function(req,res,next){
       res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user session " + req.session.username });
       return;
     }
-    /*
-    if(result.modifiedCount != 1)
-    {
-      if(follow_value){
-        req.flash('error_msg', "You are already following the user: " + username);
-        res.status(400).send({ "status": "error", "error": "User is already following " + username +" at /follow for user session " + req.session.username });
-        return;
-      }else{
-        req.flash('error_msg', "You already are not following the user: " + username);
-        res.status(400).send({ "status": "error", "error": "User is not following " + username +" at /follow for user session " + req.session.username });
-        return;
-      }
-    }
-    */
-    //success update followers on user being followed
-    const follower_query = {username :username};
-    let follower_update;
-    if(follow_value)
-      follower_update = { $addToSet: {followers: req.session.username}};
-     else
-      follower_update = { $pull: {followers: req.session.username}};
-    db.user.updateOne(follower_query,follower_update,options).then(result =>{
-      if(result == null)
-      {
-        req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
-        res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user to update follow " + username });
-        return;
-      }
-      console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
-      //console.log("result is " + result);
-      if(result.matchedCount != 1)
-      {
-        req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
-        res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user " + username });
-        return;
-      }
-      /*
-      if(result.modifiedCount != 1)
-      {
-        req.flash('error_msg', "Unable to modify the username: " + username + " to update followers");
-        res.status(400).send({ "status": "error", "error": "modified count is not one at updateOne at /follow for user  " + username });
-        return;
-      }
-      */
-      if(follow_value)
-      {
-        req.flash('success_msg','You are now following ' + username + '.');
-        res.status(200).send({"status": "OK"});
-        return;
-      }
-      else
-      {
-      req.flash('success_msg','You are now not following ' + username + '.');
-      res.status(200).send({"status": "OK"});
-      return;
-      }
-    });
+    
+    //if(result.modifiedCount != 1)
+    //{
+      //if(follow_value){
+       // req.flash('error_msg', "You are already following the user: " + username);
+       // res.status(400).send({ "status": "error", "error": "User is already following " + username +" at /follow for user session " + req.session.username });
+      //  return;
+      //}else{
+      //  req.flash('error_msg', "You already are not following the user: " + username);
+      //  res.status(400).send({ "status": "error", "error": "User is not following " + username +" at /follow for user session " + req.session.username });
+       // return;
+      //}
+    //}
+    
+   if(follow_value)
+   {
+     req.flash('success_msg','You are now following ' + username + '.');
+     res.status(200).send({"status": "OK"});
+     return;
+   }
+   else
+   {
+   req.flash('success_msg','You are now not following ' + username + '.');
+   res.status(200).send({"status": "OK"});
+   return;
+   }
     
   });
+
+
+
+
+  });
+
+
+
+ 
+
+
 });
-
-
 
 
 
