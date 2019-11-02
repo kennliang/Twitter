@@ -162,6 +162,7 @@ router.post('/search',function(req,res,next){
   //users that current session user is following
   //let followers_array;
   if(req.session.username != null && following != null){
+    console.log("accessed with user logged in and following ture");
     db.user.findOne({username:req.session.username}).then(result => {
       if(result == null)
       {
@@ -190,12 +191,13 @@ router.post('/search',function(req,res,next){
         //console.log("insode result " +result);
         //res.locals.results = result;
         res.status(200).send({"status": "OK","items":result});
+        return;
     }); 
     });
   }
   else
   {
-
+    console.log("user did not log in or following is false");
     let sorter = {timestamp: -1};
   
     let query = {$and :query_array};
@@ -205,6 +207,7 @@ router.post('/search',function(req,res,next){
       //console.log("insode result " +result);
       //res.locals.results = result;
       res.status(200).send({"status": "OK","items":result});
+      return;
     });    
   }
 });
