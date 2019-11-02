@@ -1,0 +1,25 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+ 
+
+<div class="row mt-5">
+  <div class="col-md-6 m-auto">
+  
+    <div class="card">
+        <div class="card-header">
+            <h1>{{username}}</h1>
+            </br>
+            <h5 class="card-title">Email:  {{userinfo.email}}</h5>
+        </div>
+        <div class="card-body">
+            
+            <p class="card-text" >  <span> <a href="#"> Following:  {{userinfo.following_count}} </a> </span> &nbsp; 
+            <span> <a href="#" >Followers:  {{userinfo.followers_count}} </a> </span></p>
+        </div>
+        
+    </div>
+  </div>
+</div>
+
+{% endblock %}

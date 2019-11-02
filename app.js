@@ -17,22 +17,23 @@ var client = new MongoClient(url,{useUnifiedTopology:true});
 client.connect(function(err,db){
   //console.log("Database created!");
   var testdb = db.db("testdb");
-  //console.log(MongoClient.showdbs());
-
-
-  //console.log(MongoClient);
- 
- 
+  
   testdb.createCollection("users",function(err,res){
       if(err) throw err;
       //console.log("users collection created!");
       var user = testdb.collection("users");
-      var post = testdb.collection("posts");
+      //var post = testdb.collection("posts");
       //console.log(user);
       exports.user = user;
-      exports.post = post;
-     
-      //testdb.close();
+      //exports.post = post;
+
+  });
+
+  testdb.createCollection("posts",function(err,res){
+    if(err) throw err;
+    var post = testdb.collection("posts");
+    post.createIndex({content: 'text'});
+    exports.post = post;
   });
 });
 
@@ -60,7 +61,12 @@ MongoClient.connect(url,{ useNewUrlParser: true, useUnifiedTopology: true },func
 
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var userRouter = require('./routes/user');
+var usercreationRouter = require('./routes/usercreation');
+
+var frontuserRouter = require('./routes/front_user');
+
+
 
 app.use(
   session({
@@ -70,11 +76,6 @@ app.use(
     store: new MongoStore({client:client})
   })
 );
-
-
-
-
-
 
 //global variables
 
@@ -96,7 +97,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/',usercreationRouter);
+app.use('/user', userRouter);
+app.use('/users',frontuserRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

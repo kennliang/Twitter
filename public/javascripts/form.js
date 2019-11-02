@@ -61,8 +61,10 @@ $(document).ready(function(){
                 username: document.getElementById("username").value,
                 password: document.getElementById("password").value,
             }),
+            
             success: function(data) {
                 window.location.replace("/additem");    
+                console.log("yay");
             },
             error: function (msg) {
                 location.reload();
@@ -128,51 +130,30 @@ $(document).ready(function(){
                 limit: document.getElementById("limit").valueAsNumber,
             }),
             success: function(data) {
-                //console.log(data.items);
-                //window.location.replace("");    
-                //location.reload();
-                let data_array = data.items;
-                let x = document.body.querySelectorAll("div.special");
-                //console.log(x);
-                for(let i = 0; i < x.length; i++)
-                    document.body.removeChild(x[i]);
-                for(let i = 0; i < data_array.length; i++)
+                
+                
+                let html_result = "";
+                let items = data.items;
+                //console.log(items);
+                for(let i = 0 ; i < items.length; i++)
                 {
-                    let row = document.createElement("div");
-                    row.setAttribute("class","row mt-5 special");
-                    let col = document.createElement("div");
-                    col.setAttribute("class","col-md-6 m-auto");
-                    let card = document.createElement("div");
-                    card.setAttribute("class","card");
-                    let cardheader = document.createElement("div");
-                    cardheader.setAttribute("class","card-header");
-                    let headertext = document.createElement("h5");
-                    headertext.setAttribute("class","card-title");
-                    headertext.innerHTML = 'POST #' + (i+1) + '  Username: ' + data_array[i].username + '   ID: ';
-                    let linktext = document.createElement("a");
-                    linktext.setAttribute("href","/post/"+ data_array[i].id);
-                    linktext.innerHTML = data_array[i].id;
-                    cardheader.appendChild(headertext);
-                    headertext.appendChild(linktext);
-                    let cardbody = document.createElement("div");
-                    cardbody.setAttribute("class","card-body");
-                    let cardtext = document.createElement("p");
-                    cardtext.setAttribute("class","card-text");
-                    cardtext.innerHTML = 'Content: ' + data_array[i].content;
-                    cardbody.appendChild(cardtext);
-                    let cardfooter = document.createElement("div");
-                    cardfooter.setAttribute("class","card-footer");
-                    let footertext = document.createElement("p");
-                    footertext.innerHTML = 'Likes: ' + data_array[i].property.likes  + '    Retweets: ' + data_array[i].retweeted + '   Timestamp: ' + data_array[i].timestamp;
-                    //cardtext.setAttribute("class","card-text");
-                    cardfooter.appendChild(footertext);
-                    row.appendChild(col);
-                    col.appendChild(card);
-                    card.appendChild(cardheader);
-                    card.appendChild(cardbody);
-                    card.appendChild(cardfooter);
-                    document.body.appendChild(row);
+                   
+                    html_result += "<div class='row mt-5'>" +
+                    "<div class='col-md-6 m-auto'>" +
+                    "<div class='card'>" +
+                    "<div class='card-header'>"+
+                    "<h5 class='card-title'>Username:  "+ items[i].username + "  ID:  " + items[i].id + "</h5></div>"+
+                    "<div class='card-body'>"+
+                    "<p class='card-text'>Content:  " + items[i].content + "</p></div>"+
+                    "<div class='card-footer'>"+
+                    "<p>Likes:  "+ items[i].property.likes + "  Retweets: "+ items[i].retweeted + " Timestamp: " + items[i].timestamp + "</p>"+
+                    "</div> </div> </div> </div>";
+                    //html_result += string;
+                    //console.log(string);
                 }
+                //console.log(html_result);
+                $("#result").html(html_result);
+                
             },
             error: function (msg) {
                 console.log("error in search " + msg);
@@ -180,5 +161,6 @@ $(document).ready(function(){
             },
         });
     });
+    
     
 });

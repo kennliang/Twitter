@@ -13,34 +13,62 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-expand-xl navbar-light bg-light">
-  <a class="navbar-brand text-primary" href="/">Twitter</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-    <div class="navbar-nav">
-      <!--<a class="nav-item nav-link active" href="/">Home <span class="sr-only">(current)</span></a>-->
-      <a class="nav-item nav-link" href="/adduser">Register</a>
-      <a class="nav-item nav-link" href="/verify">Verify</a>
-      <a class="nav-item nav-link" href="/login">Login</a>
-      <a class="nav-item nav-link" href="/logout">Logout</a>
-      <a class="nav-item nav-link" href="/additem">Add</a>
-       <a class="nav-item nav-link" href="/search">Search</a>
-    </div>
-  </div>
-</nav>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand " href="/">Twitter</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="navbarNavDropdown" class="navbar-collapse collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search">Search</a>
+                </li>
+                {% if authenticated %}
+                 <li class="nav-item">
+                    <a class="nav-link" href="/additem">Create Post</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href={{ "/users/%s"|format(authenticated) }}>Profile</a>
+                </li>
+                {% endif %}
+                
+            </ul>
+            <ul class="navbar-nav">
+                {% if not authenticated  %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/adduser">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/verify">Verify</a>
+                </li>
 
+                {% else %}
+                 <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
  
 
     {% block body %}
 
-    
 
     {% endblock %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="/javascripts/form.js"></script>
+    <script src="/javascripts/form.js"></script> 
   </body>
+  <footer>
+  </br>
+  </br>
+  </footer>
 </html>
