@@ -181,7 +181,8 @@ router.post('/search',function(req,res,next){
       }
       //check following not empty
       console.log(followers_query);
-      query_array.push({$or: followers_query});
+      if(followers_query.length != 0)
+        query_array.push({$or: followers_query});
 
       let sorter = {timestamp: -1};
   
