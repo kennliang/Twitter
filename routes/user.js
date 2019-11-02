@@ -31,9 +31,12 @@ router.get('/:username/posts',function(req,res,next){
   console.log("2231111");
   let username = req.params.username;
   const {limit} = req.query;
+  console.log(limit);
   let limit_post = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_post = limit;
+  else if(limit > 200)
+    limit_post = 200;
   db.user.findOne({username}).then(result => {
     if(result == null)
     {
@@ -60,6 +63,8 @@ router.get('/:username/followers',function(req,res,next){
   let limit_username = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_username = limit;
+  else if(limit > 200)
+  limit_post = 200;
   db.user.findOne({username}).then(result => {
     if(result == null)
     {
@@ -89,6 +94,8 @@ router.get('/:username/following',function(req,res,next){
   let limit_username = 50;
   if(limit != null && limit <= 200 && limit > 0)
     limit_username = limit;
+  else if(limit > 200)
+  limit_post = 200;
   db.user.findOne({username}).then(result => {
     if(result == null)
     {
