@@ -144,6 +144,8 @@ router.get('/search',function(req,res,next){
 router.post('/search',function(req,res,next){
   console.log("executing search");
   const {timestamp,limit,username,following,q} = req.body;
+
+  console.log("the paramaters are following value : " + following + "  query string = " + q);
   let search_limit = 25;
   let search_time = Date.now()/1000;
   //console.log("inside the search post");
@@ -156,7 +158,7 @@ router.post('/search',function(req,res,next){
 
   if(username != null)
     query_array.push({username : username});
-  if(q != null)
+  if(q != null && q != '' && !(/^\s+$/.test(q)))
     query_array.push({$text: {$search: q}});
 
 
