@@ -154,6 +154,9 @@ router.post('/search',function(req,res,next){
   if(limit != null && limit > 0 && limit <= 100)
     search_limit = limit;
 
+  if(limit > 100)
+    search_limit = 100;
+
   let query_array = [{timestamp: {$lte: search_time}}];
 
   if(username != null)
@@ -246,6 +249,7 @@ router.post('/follow',function(req,res,next){
       res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user session " + req.session.username });
       return;
     }
+    console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
     if(result.matchCount != 1)
     {
       req.flash('error_msg', "Unable to find the username: " + username + " to follow");
@@ -278,6 +282,8 @@ router.post('/follow',function(req,res,next){
         res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user to update follow " + username });
         return;
       }
+      console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
+      //console.log("result is " + result);
       if(result.matchCount != 1)
       {
         req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
