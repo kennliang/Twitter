@@ -107,7 +107,7 @@ router.delete('/item/:id',function(req,res,next){
   console.log(result);
   if(result.value == null)
   {
-    req.flash('error_msg', 'Unable to find post to delete with id: ' + item_id + '.');
+    req.flash('error_msg', 'Unable to find the current user who owns the post to delete with id: ' + item_id + '.');
     res.status(400).send({ "status": "error", "error": "Unable to find post to delete with id: " + item_id + "at /item/" + item_id });
     return;
   }
@@ -159,7 +159,7 @@ router.post('/search',function(req,res,next){
 
   let query_array = [{timestamp: {$lte: search_time}}];
 
-  if(username != null)
+  if(username != null && username != '')
     query_array.push({username : username});
   if(q != null && q != '' && !(/^\s+$/.test(q)))
     query_array.push({$text: {$search: q}});
@@ -167,7 +167,7 @@ router.post('/search',function(req,res,next){
 
   //users that current session user is following
   //let followers_array;
-  if(req.session.username != null && following != null){
+  if(req.session.username != null && following != null && following == true){
     console.log("accessed with user logged in and following ture");
     db.user.findOne({username:req.session.username}).then(result => {
       if(result == null)
@@ -319,15 +319,7 @@ db.user.updateOne(follower_query,follower_update,options).then(result =>{
     
   });
 
-
-
-
   });
-
-
-
- 
-
 
 });
 
@@ -352,6 +344,14 @@ router.get('/post/:id',function(req,res,next){
     return;
   });
 });
+
+router.get('/follow',function(req,res,next){
+  res.render('follow');
+});
+
+router.get('/delete',function(req,res,next){
+  res.render('deleteitem');
+})
 
 
 

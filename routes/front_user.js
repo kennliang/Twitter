@@ -2,12 +2,14 @@ var express = require('express');
 var router = express.Router();
 var db = require('../app.js');
 
-/*
+
 router.use(function(req,res,next){
-  res.locals.authenticated = req.session.username;
+  
+    res.locals.authenticated = req.session.username;
+  
   next();
 });
-*/
+
 
 
 /* GET users listing. */
@@ -42,7 +44,7 @@ router.get('/:username',function(req,res,next){
     //res.status(200).send({"status": "OK","user": info});
   });
 });
-
+/*
 router.get('/:username/posts',function(req,res,next){
   console.log("2231111");
   let username = req.params.username;
@@ -68,6 +70,6 @@ router.get('/:username/posts',function(req,res,next){
   });
    
 });
-
+*/
 
 module.exports = router;

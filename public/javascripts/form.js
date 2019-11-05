@@ -2,9 +2,9 @@
 $(document).ready(function(){
 
     $("#success_alert").alert();
-    window.setTimeout(function() { $("#success_alert").alert('close'); }, 4000);
+    window.setTimeout(function() { $("#success_alert").alert('close'); }, 5000);
     $("#error_alert").alert();
-    window.setTimeout(function() { $("#error_alert").alert('close'); }, 4000);
+    window.setTimeout(function() { $("#error_alert").alert('close'); }, 5000);
     
     $("#register").submit(function(event){
         event.preventDefault(); 
@@ -116,7 +116,10 @@ $(document).ready(function(){
 
     $("#search").submit(function(event){
         event.preventDefault(); 
-        var post_url = $(this).attr("action"); 
+        console.log("executed search submit");
+        //let query_input = document.getElementById('query')
+        var post_url = '/search';//?'+ $.param({q:document.getElementById('query').value});
+        console.log(post_url);
         var request_method = $(this).attr("method");    
         //console.log(post_url);
         //console.log(document.getElementById("timestamp"));
@@ -128,7 +131,11 @@ $(document).ready(function(){
             data: JSON.stringify({
                 timestamp: document.getElementById("timestamp").valueAsNumber,
                 limit: document.getElementById("limit").valueAsNumber,
-            }),
+                following: document.getElementById('following').checked,
+                username: document.getElementById('username').value,
+                q: document.getElementById('query').value
+            }), 
+           
             success: function(data) {
                 
                 
@@ -142,7 +149,8 @@ $(document).ready(function(){
                     "<div class='col-md-6 m-auto'>" +
                     "<div class='card'>" +
                     "<div class='card-header'>"+
-                    "<h5 class='card-title'>Username:  "+ items[i].username + "  ID:  " + items[i].id + "</h5></div>"+
+                    "<h5 class='card-title'>Username:  <a href='/users/"+ items[i].username + "'>"+ items[i].username + "  </a>ID:  " + 
+                    "<a href='/post/" + items[i].id+ "'>" + items[i].id + "</a></h5></div>"+
                     "<div class='card-body'>"+
                     "<p class='card-text'>Content:  " + items[i].content + "</p></div>"+
                     "<div class='card-footer'>"+
@@ -161,6 +169,54 @@ $(document).ready(function(){
             },
         });
     });
+
+
+
+    $("#follow").submit(function(event){
+        event.preventDefault(); 
+        var post_url = "/follow";
+        console.log(post_url);
+        var request_method = $(this).attr("method");    
+        $.ajax({
+            url: post_url,
+            type: request_method,
+            contentType:"application/json; charset=utf-8",
+            
+            data: JSON.stringify({
+                follow: document.getElementById("status").checked,
+                username: document.getElementById("username").value,
+            }),
+            success: function(data) {
+                location.reload();   
+            },
+            error: function (msg) {
+                location.reload();
+            },
+        });
+    });
     
+
+    $("#delete").submit(function(event){
+        event.preventDefault(); 
+        var post_url = "/item/"+ document.getElementById('id').value;
+        console.log(post_url);
+        var request_method = $(this).attr("method");    
+        $.ajax({
+            url: post_url,
+            type: request_method,
+            contentType:"application/json; charset=utf-8",
+            /*
+            data: JSON.stringify({
+                follow: document.getElementById("status").checked,
+                username: document.getElementById("username").value,
+            }),*/
+            success: function(data) {
+                location.reload();   
+            },
+            error: function (msg) {
+                location.reload();
+            },
+        });
+    });
     
 });
