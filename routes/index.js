@@ -199,6 +199,7 @@ router.post('/search',function(req,res,next){
     try
     {
       const {timestamp,limit,username,following,q,hasMedia,rank,parent,replies} = req.body;
+      console.log("the parameters of search is ",timestamp,limit,username,following,q,hasMedia,rank,parent,replies);
       let search_limit = 25;
       let search_time = Date.now()/1000;
 
@@ -253,16 +254,9 @@ router.post('/search',function(req,res,next){
       let result = await db.post.find(query).sort(sorter).limit(search_limit).toArray();
       if(result == null)
         throw new Error("Unable to perform search");
+      console.log(result);
       res.status(200).send({"status": "OK","items":result});
-      
-      /*(function(err,result){
-        if(err)
-        console.log("error in find /search " + err);
-        //console.log("insode result " +result);
-        //res.locals.results = result;
-        res.status(200).send({"status": "OK","items":result});
-        return;
-    }); */
+    
     }
     catch(e){
       console.log(e);
