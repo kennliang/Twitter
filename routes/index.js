@@ -1,6 +1,23 @@
 var express = require('express');
 var router = express.Router();
 const shortid = require('shortid');
+var fs = require('fs');
+var multer = require('multer');
+var upload = multer({dest: 'uploads/'});
+const cassandra = require('cassandra-driver');
+const util = require('util');
+
+const client = new cassandra.Client({
+  contactPoints: ['130.245.168.184'],
+  localDataCenter: 'datacenter1',
+  keyspace:'twitter_media',
+}); 
+client.connect(function(err){
+  if(err)
+    console.log("Error occured connecting " + err);
+  console.log("successful connection");
+  console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
+});
 
 router.use(function(req,res,next){
   res.locals.authenticated = req.session.username;
@@ -13,16 +30,6 @@ var db = require('../app.js');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-
-  //console.log(dbes);
-  //console.log(dbes.consum);
-  /*
-  var myobj = { name: "test", address: "fish" };
-  db.consum.insertOne(myobj,function(err,res){
-    if(err) throw err;
-    console.log("inserted document");
-    //console.log("list of collections " + testdb.listCollections());
-});*/
   
   res.render('index');
 });
@@ -37,104 +44,141 @@ router.get('/additem',function(req,res,next){
   res.redirect('login');
   
 });
+
+
 router.post('/additem',function(req,res,next){
-  console.log("Adding an item " + req.session.username);
-  const {content, childType} = req.body;
-  if(req.session.username == null)
-  {
-     req.flash('error_msg', 'Please log in to add an item.');
-     res.status(400).send({ "status": "error", "error": "User is not logged in to add item at /additem" });
-     return;
+  const add_item = async function(req,res){
+    try
+    {
+      const {content, childType,parent,media} = req.body;
+      const {username} = req.session;
+      if(username == null)
+        throw new Error("User is not logged in to add item at /additem")
+      if(content == null)
+        throw new Error("Missing content parameters at /additem")
+    
+      //check media
+      if(media != null && media.length != 0)
+      {
+        for(let i = 0; i < media.length ; i++)
+        {
+          let query = 'SELECT username,used FROM Media WHERE id = ?';
+          let result = await client.execute(query,[media[i]],{prepare:true});
+          if(result == null || result.rows[0] == null)
+            throw new Error("Unable to find the media id" + media[i] + "from cassandra db at /additem");
+          if(result.rows[0].username != username || result.rows[0].used == true)
+            throw new Error("The associated id was not created by the user or it is already being used");
+        }
+      }
+
+      if(childType != null)
+      {
+        if(childType == "retweet" && parent != null)
+        {
+          const query = {id: parent_id};
+          const options = {upsert:false};
+          const update_info = {$inc : {retweeted:1,total: 1}};
+          let result = await db.post.updateOne(query,update_info,options);
+          if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+            throw new Error("Unable to find or update the post tha was retweeted at /additem");
+        }
+        else if(childType == "reply" && parent != null)
+        {
+          let result = await db.post.findOne({id : parent_id});
+          if(result == null)
+            throw new Error("Unable to find the post that was replyed at /additem");
+        }
+        else
+          throw new Error("Either childType is not correct string or parent is null at /additem");
+      }
+
+      //create item
+      var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,
+      timestamp : Date.now()/1000,parent: parent_id,media: media_array,likes:[],total: 0};
+
+      db.post.insertOne(postobj);
+
+      //update user
+      const query = { username:req.session.username};
+      const update_verified = { $push: {posts: postobj}};
+      const options = {upsert:false};
+      let result = await db.user.updateOne(query,update_verified,options);
+      if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+        throw new Error("Unable to find or update the user's post at /additem");
+
+      res.status(200).send({"status": "OK","id":postobj.id}); 
+    }
+    catch(e){
+      console.log(e);
+      res.status(500).send({"status":"error","error": e});
+    }
   }
-  if(content == null)
-  {
-    req.flash('error_msg', 'Missing content information.');
-    res.status(400).send({ "status": "error", "error": "Missing content parameters at /additem" });
-    return;
-  }
-
-  //create item
-  var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,timestamp : Date.now()/1000};
-  db.post.insertOne(postobj);
-
-  //update user
-  const query = { username:req.session.username};
-  const update_verified = { $push: {posts: postobj}};
-  const options = {upsert:false};
-  db.user.updateOne(query,update_verified,options).then(result =>{
-
-    if(result.matchedCount == 0 || result.modifiedCount == 0)
-      console.log("updateOne unable to match query or modify the document at /additem");
-
-    req.flash('success_msg','You successfully made a post. ');
-    res.status(200).send({"status": "OK","id":postobj.id});
-    return;
-  },err => {
-    console.log("updateOne failed " + err);
-  });
-
+  add_item(req,res);
 });
 
 router.get('/item/:id',function(req,res,next){
-
-  let item_id = req.params.id;
-  console.log("Get item with id " + item_id);
-  db.post.findOne({id : item_id}).then(result =>{
-    if(result == null)
+  let get_item = async function(req,res){
+    try
     {
-      req.flash('error_msg', 'Unable to find post with id: ' + item_id + '.');
-      res.status(400).send({ "status": "error", "error": "Unable to find post with id: " + item_id + "at /item/" + item_id });
-      return;
+      let item_id = req.params.id;
+      //console.log("Get item with id " + item_id);
+      let result = await db.post.findOne({id : item_id});
+      if(result == null)
+        throw new Error("Unable to find the post with id "+ item_id);
+      res.status(200).send({"status": "OK","item":result});
     }
-    //req.flash('success_msg','S. ');
-    res.status(200).send({"status": "OK","item":result});
-    return;
-  });
-  
-   
+    catch(e){
+      console.log(e);
+      res.status(500).send({"status":"error","error": e});
+    }
+  } 
+  get_item(req,res);
 });
 
 router.delete('/item/:id',function(req,res,next){
-  let item_id = req.params.id;
-  if(req.session.username == null)
-  {
-    req.flash('error_msg', 'Please log in to delete the post.');
-    res.status(400).send({ "status": "error", "error": "User is not logged in to delete item" });
-    return;
-  }
-  console.log("Deleting item with id " + item_id);
-  db.post.findOneAndDelete({username: req.session.username,id:item_id}).then(result =>{
-  console.log(result);
-  if(result.value == null)
-  {
-    req.flash('error_msg', 'Unable to find the current user who owns the post to delete with id: ' + item_id + '.');
-    res.status(400).send({ "status": "error", "error": "Unable to find post to delete with id: " + item_id + "at /item/" + item_id });
-    return;
-  }
-  const query = { username: result.value.username};
-  const update = { $pull: {posts: result.value}};
-  const options = {upsert:false};
-  db.user.updateOne(query,update,options).then(result =>{
-    if(result == null)
+  const delete_item = async function(req,res){
+    try
     {
-      req.flash('error_msg', 'Unable to find post to delete with id: ' + item_id + '.');
-      res.status(400).send({ "status": "error", "error": "Unable to find post to delete with id: " + item_id + "at /item/" + item_id });
-      return;
-    }
-    if(result.matchedCount == 0 || result.modifiedCount == 0)
-    {
-      console.log("updateOne unable to match query or modify the document at /item/:id to delete");
-      req.flash('error_msg', 'Unable to find/modify post to delete with id: ' + item_id + '.');
-      res.status(400).send({ "status": "error", "error": "Unable to find/modify post to delete with id: " + item_id + "at /item/" + item_id });
-      return;
-    }
+      let item_id = req.params.id;
+      if(req.session.username == null)
+        throw new Error("User is not logged in to delete item");
+      
+      //console.log("Deleting item with id " + item_id);
+      let result = await db.post.findOneAndDelete({username: req.session.username,id:item_id});
+      if(result == null || result.value == null)
+        throw new Error("Unable to find or delete the post with id "+ item_id);
 
-    req.flash('success_msg','You successfully deleted the post.');
-    res.status(200).send({"status": "OK"});
-    return;
-  });
-
-  });
+      let child_type = result.value.childType;
+      const options = {upsert:false};
+      if(child_type == "retweet")
+      {
+        const parent_query = {id: result.value.parent};
+        const update_info = {$inc :{retweeted: -1}};
+        let update_retweet = await db.post.updateOne(parent_query,update_info,options);
+        if(update_retweet == null || update_retweet.matchedCount == 0 || update_retweet.modifiedCount == 0)
+          throw new Error("Unable to find or update the parent post retweet count");
+      }
+      
+      let media_array = result.value.media;
+      for(let i = 0; i < media_array.length; i++)
+      {
+        let query = 'DELETE FROM Media WHERE id = ?';
+        let result = await client.execute(query,[media_array[i]],{prepare:true});
+      }
+      const query = { username: result.value.username};
+      const update = { $pull: {posts: result.value}};
+     
+      let result = await db.user.updateOne(query,update,options);
+      if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+        throw new Error("Unable to find and delete the post from the user");
+      res.status(200).send({"status": "OK"});
+    }
+    catch(e){
+      console.log(e);
+      res.status(500).send({"status":"error","error": e});
+    }
+  }
+  delete_item(req,res);
 });
 
 router.get('/search',function(req,res,next){
@@ -142,186 +186,225 @@ router.get('/search',function(req,res,next){
 });
 
 router.post('/search',function(req,res,next){
-  console.log("executing search");
-  const {timestamp,limit,username,following,q} = req.body;
+  const search = async function(req,res){
+    try
+    {
+      const {timestamp,limit,username,following,q,hasMedia,rank,parent,replies} = req.body;
+      let search_limit = 25;
+      let search_time = Date.now()/1000;
 
-  console.log("the paramaters are following value : " + following + "  query string = " + q);
-  let search_limit = 25;
-  let search_time = Date.now()/1000;
-  //console.log("inside the search post");
-  if(timestamp != null)
-    search_time = timestamp;
-  if(limit != null && limit > 0 && limit <= 100)
-    search_limit = limit;
+      if(timestamp != null)
+        search_time = timestamp;
 
-  if(limit > 100)
-    search_limit = 100;
+      if(limit != null && limit > 0 && limit <= 100)
+        search_limit = limit;
 
-  let query_array = [{timestamp: {$lte: search_time}}];
+      if(limit > 100)
+        search_limit = 100;
 
-  if(username != null && username != '')
-    query_array.push({username : username});
-  if(q != null && q != '' && !(/^\s+$/.test(q)))
-    query_array.push({$text: {$search: q}});
+      let query_array = [{timestamp: {$lte: search_time}}];
 
+      if(username != null && username != '')
+        query_array.push({username : username});
+      if(q != null && q != '' && !(/^\s+$/.test(q)))
+        query_array.push({$text: {$search: q}});
 
-  //users that current session user is following
-  //let followers_array;
-  if(req.session.username != null && following != null && following == true){
-    console.log("accessed with user logged in and following ture");
-    db.user.findOne({username:req.session.username}).then(result => {
-      if(result == null)
-      {
-        //req.flash('error_msg', 'Unable to find username:' + username + '.');
-        res.status(400).send({ "status": "error", "error": "Unable to find account with username " + username + " at /user/" + username });
-        return;
+      let has_media_query = false;
+      if(hasMedia != null)
+        has_media_query = hasMedia;
+      if(has_media_query)
+        query_array.push({media:{$not:{$size : 0}}});
+
+      //get followers of current signed in user if following is true
+      if(req.session.username != null && following == true){
+        console.log("accessed with user logged in and following ture");
+        let result = db.user.findOne({username:req.session.username});
+        if(result == null)
+          throw new Error("Unable to find current logged in username in database at /search ")
+       
+        let followers_array = result.following;
+        let followers_query = [];
+        for(let i = 0; i < followers_array.length; i++)
+          followers_query.push({username: followers_array[i]});
+        if(followers_query.length != 0)
+          query_array.push({$or: followers_query});
       }
-      let followers_array = result.following;
-      let followers_query = [];
-      console.log("Result of followers_array " + followers_array);
-      for(let i = 0; i < followers_array.length; i++)
-      {
-        console.log("Executed inside here");
-        followers_query.push({username: followers_array[i]});
-      }
-      //check following not empty
-      console.log(followers_query);
-      if(followers_query.length != 0)
-        query_array.push({$or: followers_query});
-
-      let sorter = {timestamp: -1};
-  
+      let sorter = {total: -1};
+      if(rank == "time")
+        sorter = {timestamp: -1};
       let query = {$and :query_array};
-      db.post.find(query).sort(sorter).limit(search_limit).toArray(function(err,result){
+      let result = await db.post.find(query).sort(sorter).limit(search_limit).toArray();
+      if(result == null)
+        throw new Error("Unable to perform search");
+      res.status(200).send({"status": "OK","items":result});
+      
+      /*(function(err,result){
         if(err)
         console.log("error in find /search " + err);
         //console.log("insode result " +result);
         //res.locals.results = result;
         res.status(200).send({"status": "OK","items":result});
         return;
-    }); 
-    });
-  }
-  else
-  {
-    console.log("user did not log in or following is false");
-    let sorter = {timestamp: -1};
-  
-    let query = {$and :query_array};
-    db.post.find(query).sort(sorter).limit(search_limit).toArray(function(err,result){
-      if(err)
-        console.log("error in find /search " + err);
-      //console.log("insode result " +result);
-      //res.locals.results = result;
-      res.status(200).send({"status": "OK","items":result});
-      return;
-    });    
+    }); */
+    }
+    catch(e){
+      console.log(e);
+      res.status(500).send({"status":"error","error": e});
+    }
   }
 });
 
 router.post('/follow',function(req,res,next){
-  
-
-  console.log("following the parameters are user to follow " + req.body.username + " and current session user is " + req.session.username);
-  const {username,follow} = req.body;
-  let follow_value = true;
-  if(follow != null)
-  {
-    follow_value = follow;
-  }
-  if(req.session.username == null)
-  {
-    req.flash('error_msg', 'Please log in to follow a user.');
-    res.status(400).send({ "status": "error", "error": "User is not logged in to follow users" });
-    return;
-  }
-
-//update followers on user being followed
-
-const follower_query = {username :username};
-const options = {upsert:false};
-let follower_update;
-if(follow_value)
-  follower_update = { $addToSet: {followers: req.session.username}};
- else
-  follower_update = { $pull: {followers: req.session.username}};
-db.user.updateOne(follower_query,follower_update,options).then(result =>{
-  if(result == null)
-  {
-    req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
-    res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user to update follow " + username });
-    return;
-  }
-  console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
-  //console.log("result is " + result);
-  if(result.matchedCount != 1)
-  {
-    req.flash('error_msg', "Unable to find the username: " + username + " to update followers");
-    res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user " + username });
-    return;
-  }
-  
-  //if(result.modifiedCount != 1)
-  //{
-   // req.flash('error_msg', "Unable to modify the username: " + username + " to update followers");
-    //res.status(400).send({ "status": "error", "error": "modified count is not one at updateOne at /follow for user  " + username });
-    //return;
-  //}
-  
- const query = { username: req.session.username};
-  
-  let updates;
-  if(follow_value)
-    updates = { $addToSet: {following: username}};
-  else
-    updates = { $pull: {following: username}};
-  db.user.updateOne(query,updates,options).then(result =>{
-    //console.log(result);
-    if(result == null)
+  const follow = async function(req,res){
+    try
     {
-      req.flash('error_msg', "Unable to find the username: " + username + " to follow");
-      res.status(400).send({ "status": "error", "error": "result is null updateOne at /follow for user session " + req.session.username });
-      return;
+      const {username,follow} = req.body;
+      let follow_value = true;
+      if(follow != null)
+        follow_value = follow;
+      if(req.session.username == null)
+        throw new Error("User is not logged in to follow other users");
+
+      //check to see if user being followed exist and update
+      const follower_query = {username :username};
+      const options = {upsert:false};
+      let follower_update;
+      if(follow_value)
+        follower_update = { $addToSet: {followers: req.session.username}};
+      else
+        follower_update = { $pull: {followers: req.session.username}};
+
+      let result = await db.user.updateOne(follower_query,follower_update,options);
+      if(result == null || result.matchedCount == 0)
+        throw new Error("Unable to find the user being followed");
+      
+      const query = { username: req.session.username};
+      let updates;
+      if(follow_value)
+        updates = { $addToSet: {following: username}};
+      else
+        updates = { $pull: {following: username}};
+      let result = await db.user.updateOne(query,updates,options);
+      if(result == null || result.matchedCount == 0)
+        throw new Error("Unable to find the current user at /follow");
+  
+      res.status(200).send({"status": "OK"});
     }
-    console.log("match count is " + result.matchedCount + "   modified count is " + result.modifiedCount);
-    if(result.matchedCount != 1)
+    catch(e){
+      console.log(e);
+      res.status(500).send({"status":"error","error": e});
+    }
+  }
+});
+
+
+/*
+  Milestone 3 routes
+*/
+
+router.get('/addmedia',function(req,res,next){
+
+  res.render('upload');
+});
+
+router.post('/addmedia',upload.single('content'),function(req,res,next){
+  const addMedia = async function(req,res) {
+    try
     {
-      req.flash('error_msg', "Unable to find the username: " + username + " to follow");
-      res.status(400).send({ "status": "error", "error": "matchCount is not one at updateOne at /follow for user session " + req.session.username });
-      return;
-    }
-    
-    //if(result.modifiedCount != 1)
-    //{
-      //if(follow_value){
-       // req.flash('error_msg', "You are already following the user: " + username);
-       // res.status(400).send({ "status": "error", "error": "User is already following " + username +" at /follow for user session " + req.session.username });
-      //  return;
-      //}else{
-      //  req.flash('error_msg', "You already are not following the user: " + username);
-      //  res.status(400).send({ "status": "error", "error": "User is not following " + username +" at /follow for user session " + req.session.username });
-       // return;
+      const {username} = req.session;
+      if(username == null)
+        console.log("cool");
+        //res.status(400).send({"status":"error","error":"The user must be logged in to add media"});
+      //else
+      //{
+        console.log(req.file['path']);
+        //fs.unlink(req.file['path']);
+        let unlink = util.promisify(fs.unlink);
+        let read = util.promisify(fs.readFile);
+        //console.log(res);
+      
+        
+        let data = await read(req.file['path']);
+        let media_id = shortid.generate();
+      
+        let query = 'INSERT into Media (id,content,used,username) VALUES (?,?,?,?)';
+        const result = await client.execute(query,[media_id,data,false,username],{prepare:true});
+        await unlink(req.file['path']);
+        res.status(200).send({"status":"OK","id":media_id});
       //}
-    //}
-    
-   if(follow_value)
-   {
-     req.flash('success_msg','You are now following ' + username + '.');
-     res.status(200).send({"status": "OK"});
-     return;
-   }
-   else
-   {
-   req.flash('success_msg','You are now not following ' + username + '.');
-   res.status(200).send({"status": "OK"});
-   return;
-   }
-    
-  });
+    }
+    catch(e){
+      console.log("Try catch error at addmedia "+ e);
+      res.status(400).send({"status":"error","error":"Error thrown at addmedia"+e});
+    }
+  }
+  addMedia(req,res);
+});
 
-  });
+router.get('/media/:id',function(req,res,next){
+  let get_media = async function(req,res){
+    try
+    {
+      let media_id = req.params.id;
+      let query = 'SELECT content FROM Media WHERE id = ?';
+      let result = await client.execute(query,[media_id],{prepare:true});
+      if(result == null || result.rows[0] == null)
+        throw new Error("Unable to get media from cassandra db");
+        res.status(200).send(result.rows[0].content);
+    }
+    catch(e){
+      console.log("Try catch error at addmedia "+ e);
+      res.status(400).send({"status":"error","error":"Error thrown at get media"+e});
+    }
+  }
+  get_media(req,res);
+});
+
+router.post('/item/:id/like',function(req,res,next){
+  const like = async function(req,res){
+    try
+    {
+      const {username} = req.session;
+      const {like} = req.body;
+      const {id} = req.params;
+      if(username == null)
+        throw new Error("User is not logged in to like a post");
+  
+        //let item_id = req.params.id;
+        let like_status = true;
+        if(like != null)
+          like_status = like;
+
+        const query = { id: id};
+        const options = {upsert:false};
+
+        let update_info;
+        if(like_status)
+          update_info = { $addToSet:{likes: username}};
+        else
+          update_info = { $pull: {likes: username}};
+
+        let result = await db.post.findOneAndUpdate(query,update_info,options);
+        if(result == null)
+          throw new Error("Unable to find and update item being liked with id " + id);
+
+        update_info = {$set:{"property.likes":result.value.likes.length,total: result.value.likes.length + result.value.retweeted}};
+        let result = await db.post.updateOne(query,update_info,options);
+        if(result == null || result.matchedCount == 0,result.modifiedCount == 0)
+          throw new Error("Unable to update the item being liked with id " + id)
+
+        res.status(200).send({"status":"OK"});
+    }
+    catch(e){
+      console.log("Try catch error at addmedia "+ e);
+      res.status(400).send({"status":"error","error":"Error thrown at like"+e});
+    }
+  }
+  like(req,res);
 
 });
+
+
 
 
 
@@ -351,7 +434,9 @@ router.get('/follow',function(req,res,next){
 
 router.get('/delete',function(req,res,next){
   res.render('deleteitem');
-})
+
+});
+
 
 
 
