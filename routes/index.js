@@ -239,7 +239,7 @@ router.post('/search',function(req,res,next){
           query_array.push({$or: followers_query});
       }
       if(replies == false)
-        query_array.push({$not: {child_type: "reply"}});
+        query_array.push({replies: {$not :{$ep: "reply"}}});
       else if(replies == null || replies == true)
       {
         if(parent != null)
