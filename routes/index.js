@@ -109,7 +109,7 @@ router.post('/additem',function(req,res,next){
 
       //update user
       const query = { username:req.session.username};
-      const update_verified = { $push: {posts: postobj}};
+      const update_verified = { $push: {posts: postobj.id}};
       const options = {upsert:false};
       let result = await db.user.updateOne(query,update_verified,options);
       if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
@@ -181,7 +181,7 @@ router.delete('/item/:id',function(req,res,next){
         }
       }
       const query = { username: result.value.username};
-      const update = { $pull: {posts: result.value}};
+      const update = { $pull: {posts: result.value.id}};
      
       let result2 = await db.user.updateOne(query,update,options);
       if(result2 == null || result2.matchedCount == 0 || result2.modifiedCount == 0)

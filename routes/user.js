@@ -45,6 +45,7 @@ router.get('/:username/posts',function(req,res,next){
       res.status(400).send({ "status": "error", "error": "Unable to find account with username " + username + " at /user/" + username });
       return;
     }
+    /*
     let post_array = result.posts;
     let post_id_array = [];
     for(let i = 0 ; i < post_array.length && i < limit_post; i++)
@@ -52,7 +53,8 @@ router.get('/:username/posts',function(req,res,next){
       let item = post_array[post_array.length -1 -i];
       post_id_array.push(item.id);
     }
-    res.status(200).send({"status": "OK","items": post_id_array});
+    */
+    res.status(200).send({"status": "OK","items": result.posts});
   });
    
 });
