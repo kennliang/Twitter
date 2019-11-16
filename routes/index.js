@@ -64,6 +64,7 @@ router.post('/additem',function(req,res,next){
         {
           let query = 'SELECT username,used FROM Media WHERE id = ?';
           let result = await client.execute(query,[media[i]],{prepare:true});
+          console.log(result.rows[0]);
           if(result == null || result.rows[0] == null)
             throw new Error("Unable to find the media id" + media[i] + "from cassandra db at /additem");
           if(result.rows[0].username != username || result.rows[0].used == true)
