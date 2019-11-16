@@ -75,7 +75,7 @@ router.post('/additem',function(req,res,next){
       {
         if(childType == "retweet" && parent != null)
         {
-          const query = {id: parent_id};
+          const query = {id: parent};
           const options = {upsert:false};
           const update_info = {$inc : {retweeted:1,total: 1}};
           let result = await db.post.updateOne(query,update_info,options);
@@ -84,7 +84,7 @@ router.post('/additem',function(req,res,next){
         }
         else if(childType == "reply" && parent != null)
         {
-          let result = await db.post.findOne({id : parent_id});
+          let result = await db.post.findOne({id : parent});
           if(result == null)
             throw new Error("Unable to find the post that was replyed at /additem");
         }
@@ -94,7 +94,7 @@ router.post('/additem',function(req,res,next){
 
       //create item
       var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,
-      timestamp : Date.now()/1000,parent: parent_id,media: media_array,likes:[],total: 0};
+      timestamp : Date.now()/1000,childType: childType,parent: parent,media: media,likes:[],total: 0};
 
       db.post.insertOne(postobj);
 
