@@ -98,10 +98,12 @@ router.post('/additem',function(req,res,next){
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
       
-
+      let media_value = [];
+      if(media != null)
+        media_value = media;
       //create item
       var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,
-      timestamp : Date.now()/1000,childType: childType,parent: parent,media: media,likes:[],total: 0};
+      timestamp : Date.now()/1000,childType: childType,parent: parent,media: media_value,likes:[],total: 0};
 
       db.post.insertOne(postobj);
 
