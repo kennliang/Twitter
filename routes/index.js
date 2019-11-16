@@ -70,6 +70,11 @@ router.post('/additem',function(req,res,next){
           if(result.rows[0].username != username || result.rows[0].used == true)
             throw new Error("The associated id was not created by the user or it is already being used");
         }
+        for(let i = 0; i < media.length ; i++)
+        {
+          let query = 'UPDATE Media SET used = ? WHERE id = ?';
+          let result = await client.execute(query,[true,media[i]],{prepare:true});
+        }
       }
 
       if(childType != null)
@@ -92,11 +97,7 @@ router.post('/additem',function(req,res,next){
         else
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
-      for(let i = 0; i < media.length ; i++)
-      {
-        let query = 'UPDATE Media SET used = ? WHERE id = ?';
-        let result = await client.execute(query,[true,media[i]],{prepare:true});
-      }
+      
 
       //create item
       var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,
