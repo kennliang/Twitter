@@ -242,8 +242,8 @@ router.post('/search',function(req,res,next){
         query_array.push({replies: {$not :{$eq: "reply"}}});
       else if(replies == null || replies == true)
       {
-        if(parent != null)
-          query_array.push({$and : [{parent : parent},{child_type: "reply"}]});
+        if(parent != null || parent != '')
+          query_array.push({$and : [{parent : parent},{child_Type: {$not :{$eq: null}}}]});
       }
       
       let sorter = {total: -1};
