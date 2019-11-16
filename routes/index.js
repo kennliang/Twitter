@@ -243,14 +243,18 @@ router.post('/search',function(req,res,next){
         query_array.push({replies: {$not :{$eq: "reply"}}});
       else if(replies == null || replies == true)
       {
-        if(parent != null || parent != '')
+        if(parent != null && parent != '')
+        {
+          console.log("executed3wedsaweds");
           query_array.push({$and : [{parent : parent},{child_Type: {$not :{$eq: null}}}]});
+        }
       }
       
       let sorter = {total: -1};
       if(rank == "time")
         sorter = {timestamp: -1};
       let query = {$and :query_array};
+      console.log(query_array);
       let result = await db.post.find(query).sort(sorter).limit(search_limit).toArray();
       if(result == null)
         throw new Error("Unable to perform search");
