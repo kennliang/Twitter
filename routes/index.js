@@ -77,7 +77,7 @@ router.post('/additem',function(req,res,next){
         }
       }
 
-      if(childType != null)
+      if(childType != null && childType != '')
       {
         if(childType == "retweet" && parent != null)
         {
@@ -384,6 +384,7 @@ router.post('/item/:id/like',function(req,res,next){
           like_status = like;
 
         const query = { id: id};
+        const update_options = {upsert:false,returnOriginal: false};
         const options = {upsert:false};
 
         let update_info;
@@ -392,14 +393,22 @@ router.post('/item/:id/like',function(req,res,next){
         else
           update_info = { $pull: {likes: username}};
 
-        let result = await db.post.findOneAndUpdate(query,update_info,options);
+        let result = await db.post.findOneAndUpdate(query,update_info,update_options);
         if(result == null)
           throw new Error("Unable to find and update item being liked with id " + id);
-
+        console.log(result);
+        //console.log(result.value);
+        console.log(result.value.likes);
+        console.log(result.value.likes.length, result.value.retweeted);
         update_info = {$set:{"property.likes":result.value.likes.length,"total": result.value.likes.length + result.value.retweeted}};
         let result2 = await db.post.updateOne(query,update_info,options);
         if(result2 == null || result2.matchedCount == 0 || result2.modifiedCount == 0)
+        {
+          //console.log(result2);
+          console.log(result2.matchedCount);
+          console.log(result2.modifiedCount);
           throw new Error("Unable to update the item being liked with id " + id)
+        }
 
         res.status(200).send({"status":"OK"});
     }
