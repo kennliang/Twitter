@@ -220,7 +220,7 @@ router.post('/search',function(req,res,next){
       if(hasMedia != null)
         has_media_query = hasMedia;
       if(has_media_query)
-        query_array.push({media:{$not:{$size : 0}}});
+        query_array.push({media:{ $exists: true, $ne: [] }});
 
       //get followers of current signed in user if following is true
       if(req.session.username != null && following == true){
