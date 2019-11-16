@@ -384,13 +384,13 @@ router.post('/item/:id/like',function(req,res,next){
         else
           update_info = { $pull: {likes: username}};
 
-        let result = await db.post.findOneAndUpdate(query,update_info,options);
-        if(result == null)
+        let result2 = await db.post.findOneAndUpdate(query,update_info,options);
+        if(result2 == null)
           throw new Error("Unable to find and update item being liked with id " + id);
 
         update_info = {$set:{"property.likes":result.value.likes.length,total: result.value.likes.length + result.value.retweeted}};
-        let result = await db.post.updateOne(query,update_info,options);
-        if(result == null || result.matchedCount == 0,result.modifiedCount == 0)
+        let result3 = await db.post.updateOne(query,update_info,options);
+        if(result3 == null || result3.matchedCount == 0,result3.modifiedCount == 0)
           throw new Error("Unable to update the item being liked with id " + id)
 
         res.status(200).send({"status":"OK"});
