@@ -246,10 +246,12 @@ router.post('/search',function(req,res,next){
         if(parent != null && parent != '')
         {
           console.log("executed3wedsaweds");
-          query_array.push({$and : [{parent : parent},{child_Type: {$not :{$eq: null}}}]});
+          console.log(parent);
+          query_array.push({parent:parent});
+          //query_array.push({$and : [{parent : parent},{$or :[{child_Type: {$eq: "retweet"}},{child_Type:{ $eq:"reply"}}]}]  }  );
         }
       }
-      
+
       let sorter = {total: -1};
       if(rank == "time")
         sorter = {timestamp: -1};
