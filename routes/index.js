@@ -313,7 +313,8 @@ router.post('/addmedia',upload.single('content'),function(req,res,next){
     {
       const {username} = req.session;
       if(username == null)
-        console.log("cool");
+        throw new Error("the user must be logged in to add media");
+        //console.log("cool");
         //res.status(400).send({"status":"error","error":"The user must be logged in to add media"});
       //else
       //{
