@@ -284,8 +284,8 @@ router.post('/follow',function(req,res,next){
         updates = { $addToSet: {following: username}};
       else
         updates = { $pull: {following: username}};
-      let result = await db.user.updateOne(query,updates,options);
-      if(result == null || result.matchedCount == 0)
+      let result2 = await db.user.updateOne(query,updates,options);
+      if(result2 == null || result2.matchedCount == 0)
         throw new Error("Unable to find the current user at /follow");
   
       res.status(200).send({"status": "OK"});
