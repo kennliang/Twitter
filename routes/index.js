@@ -392,19 +392,19 @@ router.post('/item/:id/like',function(req,res,next){
         else
           update_info = { $pull: {likes: username}};
 
-        let result2 = await db.post.findOneAndUpdate(query,update_info,options);
-        if(result2 == null)
+        let result = await db.post.findOneAndUpdate(query,update_info,options);
+        if(result == null)
           throw new Error("Unable to find and update item being liked with id " + id);
 
         update_info = {$set:{"property.likes":result.value.likes.length,total: result.value.likes.length + result.value.retweeted}};
-        let result3 = await db.post.updateOne(query,update_info,options);
-        if(result3 == null || result3.matchedCount == 0,result3.modifiedCount == 0)
+        let result2 = await db.post.updateOne(query,update_info,options);
+        if(result2 == null || result2.matchedCount == 0,result2.modifiedCount == 0)
           throw new Error("Unable to update the item being liked with id " + id)
 
         res.status(200).send({"status":"OK"});
     }
     catch(e){
-      console.log("Try catch error at addmedia "+ e);
+      console.log("Try catch error at like "+ e);
       res.status(400).send({"status":"error","error":"Error thrown at like"+e});
     }
   }
