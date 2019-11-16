@@ -1,0 +1,13 @@
+
+
+{% if success_msg != '' %}
+    <div id="success_alert" class="alert alert-success" role="alert" >
+        <p> {{success_msg}}</p>
+    </div>
+{% endif %}
+
+{% if error_msg != '' %}
+    <div id="error_alert" class="alert alert-danger" role="alert" >
+        <p> {{error_msg}}</p>
+    </div>
+{% endif %}

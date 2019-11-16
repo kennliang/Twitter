@@ -1,0 +1,83 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+
+<div class="row mt-5 junk">
+  <div class="col-md-6 m-auto">
+    <div class="card card-body">
+      <h1 class="text-center mb-3"><i class="fas fa-sign-in-alt"></i> Search Post</h1>
+      {% include 'message.twig' %}
+
+      <form id="search" action="/search" method="POST">
+        <div class="form-group">
+          <label for="timestamp">Timestamp</label>
+          <input
+            type="number"
+            step=any
+            id="timestamp"
+            name="timestamp"
+            class="form-control"
+            placeholder="Enter Timestamp"
+          />
+        </div>
+        <div class="form-group">
+          <label for="limit">Limit</label>
+          <input
+            type="number"
+            id="limit"
+            name="limit"
+            class="form-control"
+            placeholder="Enter the number of posts to search for"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="query">Query</label>
+          <input
+            type="text"
+            id="query"
+            name="query"
+            class="form-control"
+            placeholder="Enter any text to search for in the contents of post"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            placeholder="Enter a username to search posts by"
+          />
+        </div>
+
+         <div class="form-check">
+          
+          <input
+            type="checkbox"
+            id="following"
+            name="following"
+            class="form-check-input"
+            placeholder="Check to search for only following"
+          />
+          <label class="form-check-label"for="following">Following</label>
+        </div>
+
+        </br>
+
+        <button type="submit" class="btn btn-primary btn-block">Search</button>
+      </form>
+     
+    </div>
+  </div>
+</div>
+
+<div id="result">
+
+</div>
+
+ 
+
+{% endblock %}
