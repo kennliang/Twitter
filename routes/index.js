@@ -236,6 +236,14 @@ router.post('/search',function(req,res,next){
         if(followers_query.length != 0)
           query_array.push({$or: followers_query});
       }
+      if(replies == false)
+        query_array.push({$not: {child_type: "reply"}});
+      else if(replies == null || replies == true)
+      {
+        if(parent != null)
+          query_array.push({$and : [{parent : parent},{child_type: "reply"}]});
+      }
+      
       let sorter = {total: -1};
       if(rank == "time")
         sorter = {timestamp: -1};
@@ -259,6 +267,7 @@ router.post('/search',function(req,res,next){
       res.status(500).send({"status":"error","error": e});
     }
   }
+  search(req,res);
 });
 
 router.post('/follow',function(req,res,next){
