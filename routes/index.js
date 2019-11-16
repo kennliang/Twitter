@@ -154,9 +154,12 @@ router.delete('/item/:id',function(req,res,next){
       
       //console.log("Deleting item with id " + item_id);
       let result = await db.post.findOneAndDelete({username: req.session.username,id:item_id});
+      console.log(result);
+      console.log(result.value);
       if(result == null || result.value == null)
         throw new Error("Unable to find or delete the post with id "+ item_id);
 
+      console.log(result.value.childType);
       let child_type = result.value.childType;
       const options = {upsert:false};
       if(child_type == "retweet")
@@ -167,18 +170,21 @@ router.delete('/item/:id',function(req,res,next){
         if(update_retweet == null || update_retweet.matchedCount == 0 || update_retweet.modifiedCount == 0)
           throw new Error("Unable to find or update the parent post retweet count");
       }
-      
+      console.log(result.value.media);
       let media_array = result.value.media;
-      for(let i = 0; i < media_array.length; i++)
+      if(media_array != null)
       {
-        let query = 'DELETE FROM Media WHERE id = ?';
-        let res = await client.execute(query,[media_array[i]],{prepare:true});
+        for(let i = 0; i < media_array.length; i++)
+        {
+          let query = 'DELETE FROM Media WHERE id = ?';
+          await client.execute(query,[media_array[i]],{prepare:true});
+        }
       }
       const query = { username: result.value.username};
       const update = { $pull: {posts: result.value}};
      
-      let res = await db.user.updateOne(query,update,options);
-      if(res == null || res.matchedCount == 0 || res.modifiedCount == 0)
+      let result2 = await db.user.updateOne(query,update,options);
+      if(result2 == null || result2.matchedCount == 0 || result2.modifiedCount == 0)
         throw new Error("Unable to find and delete the post from the user");
       res.status(200).send({"status": "OK"});
     }
