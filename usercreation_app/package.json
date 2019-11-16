@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/user_app"
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "cassandra-driver": "^4.3.1",

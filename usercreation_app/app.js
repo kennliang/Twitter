@@ -61,10 +61,8 @@ MongoClient.connect(url,{ useNewUrlParser: true, useUnifiedTopology: true },func
 
 
 var indexRouter = require('./routes/index');
-var userRouter = require('./routes/user');
-var usercreationRouter = require('./routes/usercreation');
+var userRouter = require('./routes/users');
 
-var frontuserRouter = require('./routes/front_user');
 
 
 
@@ -97,9 +95,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/',usercreationRouter);
-app.use('/user', userRouter);
-app.use('/users',frontuserRouter);
+app.use('/users', userRouter);
+
 
 
 // catch 404 and forward to error handler
