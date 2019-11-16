@@ -163,13 +163,13 @@ router.delete('/item/:id',function(req,res,next){
       for(let i = 0; i < media_array.length; i++)
       {
         let query = 'DELETE FROM Media WHERE id = ?';
-        let result = await client.execute(query,[media_array[i]],{prepare:true});
+        let res = await client.execute(query,[media_array[i]],{prepare:true});
       }
       const query = { username: result.value.username};
       const update = { $pull: {posts: result.value}};
      
-      let result = await db.user.updateOne(query,update,options);
-      if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+      let res = await db.user.updateOne(query,update,options);
+      if(res == null || res.matchedCount == 0 || res.modifiedCount == 0)
         throw new Error("Unable to find and delete the post from the user");
       res.status(200).send({"status": "OK"});
     }
