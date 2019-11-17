@@ -21,6 +21,11 @@ client.connect(function(err){
 
 var db = require('../app.js');
 
+router.get('/addmedia',function(req,res,next){
+
+  res.render('upload');
+});
+
 router.post('/addmedia',upload.single('content'),function(req,res,next){
   const addMedia = async function(req,res) {
     try

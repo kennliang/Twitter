@@ -6,6 +6,8 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+var db = require('../app.js');
+
 router.get('/item/:id',function(req,res,next){
   let get_item = async function(req,res){
     try
