@@ -1,5 +1,19 @@
 var express = require('express');
 var router = express.Router();
+const cassandra = require('cassandra-driver');
+const util = require('util');
+
+const client = new cassandra.Client({
+  contactPoints: ['130.245.168.184'],
+  localDataCenter: 'datacenter1',
+  keyspace:'twitter_media',
+}); 
+client.connect(function(err){
+  if(err)
+    console.log("Error occured connecting " + err);
+  console.log("successful connection");
+  console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
+});
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
