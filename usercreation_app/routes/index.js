@@ -76,10 +76,15 @@ router.post('/verify', function(req, res, next) {
         throw new Error("Missing parameters at /verify")
       if(key != "abracadabra")
         throw new Error("Invalid verification key at /verify");
-      const query = { email:email, verified:false};
+      //const query = { email:email, verified:false};
       const update_verified = { $set: {verified:true}};
       const options = {upsert:false};
 
+      let find_user = await db.user.findOne({email:email});
+      if(find_user == null|| find_user.value.verified == true)
+        throw new Error("unable to find the user with email to verify or user is already verified");
+      
+      const query = { username: find_user.value.username};
       let result = await db.user.updateOne(query,update_verified,options);
       if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
         throw new Error("Unable to find or update the user to verify");
