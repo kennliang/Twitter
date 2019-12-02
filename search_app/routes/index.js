@@ -37,7 +37,7 @@ router.post('/search',function(req,res,next){
     try
     {
       const {timestamp,limit,username,following,q,hasMedia,rank,parent,replies} = req.body;
-      console.log("the parameters of search is ",timestamp,limit,username,following,q,hasMedia,rank,parent,replies);
+      //console.log("the parameters of search is ",timestamp,limit,username,following,q,hasMedia,rank,parent,replies);
       let search_limit = 25;
       let search_time = Date.now()/1000;
 
@@ -84,7 +84,7 @@ router.post('/search',function(req,res,next){
         if(parent != null && parent != '')
         {
           //console.log("executed3wedsaweds");
-          console.log(parent);
+          //console.log(parent);
           query_array.push({parent:parent});
           //query_array.push({$and : [{parent : parent},{$or :[{child_Type: {$eq: "retweet"}},{child_Type:{ $eq:"reply"}}]}]  }  );
         }
@@ -94,11 +94,11 @@ router.post('/search',function(req,res,next){
       if(rank == "time")
         sorter = {timestamp: -1};
       let query = {$and :query_array};
-      console.log(query_array);
+      //console.log(query_array);
       let result = await db.post.find(query).sort(sorter).limit(search_limit).toArray();
       if(result == null)
         throw new Error("Unable to perform search");
-      console.log(result);
+      //console.log(result);
       res.status(200).send({"status": "OK","items":result});
     
     }
