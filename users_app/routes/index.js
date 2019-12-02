@@ -63,6 +63,7 @@ router.post('/follow',function(req,res,next){
       res.status(500).send({"status":"error","error": e});
     }
   }
+  follow(req,res);
 });
 
 var db = require('../app.js');

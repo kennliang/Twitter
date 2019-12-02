@@ -50,7 +50,8 @@ router.get('/:username/posts',function(req,res,next){
       console.log("Try catch error at user's post "+ e);
       res.status(500).send({"status":"error","error":"Error thrown at user's post"+e});
     }
-  }   
+  } 
+  posts(req,res);  
 });
 
 router.get('/:username/followers',function(req,res,next){
@@ -76,6 +77,7 @@ router.get('/:username/followers',function(req,res,next){
       res.status(500).send({"status":"error","error":"Error thrown at user's followers"+e});
     }
   }
+  followers(req,res);
   
 });
 router.get('/:username/following',function(req,res,next){
@@ -101,6 +103,8 @@ router.get('/:username/following',function(req,res,next){
       res.status(500).send({"status":"error","error":"Error thrown at user's following"+e});
     }
   }
+
+  following(req,res);
    
 });
 
