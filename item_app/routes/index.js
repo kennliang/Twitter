@@ -129,7 +129,7 @@ router.post('/item/:id/like',function(req,res,next){
           throw new Error("Unable to find and update item being liked with id " + id);
         update_info = {$set:{"property.likes":result.value.likes.length,"total": result.value.likes.length + result.value.retweeted}};
         let result2 = await db.post.updateOne(query,update_info,options);
-        if(result2 == null || result2.matchedCount == 0 || result2.modifiedCount == 0)
+        if(result2 == null || result2.matchedCount == 0)
           throw new Error("Unable to update the item being liked with id " + id)
         res.status(200).send({"status":"OK"});
     }
