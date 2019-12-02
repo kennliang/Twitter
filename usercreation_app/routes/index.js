@@ -82,10 +82,10 @@ router.post('/verify', function(req, res, next) {
 
       let find_user = await db.user.findOne({email:email});
       console.log(find_user);
-      if(find_user == null || find_user.value == null || find_user.value.verified == true)
+      if(find_user == null || find_user.verified == true)
         throw new Error("unable to find the user with email to verify or user is already verified");
       
-      const query = { username: find_user.value.username};
+      const query = { username: find_user.username};
       let result = await db.user.updateOne(query,update_verified,options);
       if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
         throw new Error("Unable to find or update the user to verify");
