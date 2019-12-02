@@ -130,7 +130,7 @@ router.post('/item/:id/like',function(req,res,next){
         update_info = {$set:{"property.likes":result.value.likes.length,"total": result.value.likes.length + result.value.retweeted}};
         let result2 = await db.post.updateOne(query,update_info,options);
         if(result2 == null || result2.matchedCount == 0)
-          throw new Error("Unable to update the item being liked with id " + id)
+          throw new Error("Unable to update the item being liked with id " + id + "result is "+ result2);
         res.status(200).send({"status":"OK"});
     }
     catch(e){
