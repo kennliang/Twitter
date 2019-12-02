@@ -10,7 +10,7 @@ var app = express();
 //app.use(flash());
 
 var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://130.245.171.203:27017/";
+var url = "mongodb://130.245.168.150:27017/";
 
 var client = new MongoClient(url,{useUnifiedTopology:true});
 
