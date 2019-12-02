@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 const cassandra = require('cassandra-driver');
 const util = require('util');
+var db = require('../app.js');
+
 
 const client = new cassandra.Client({
   contactPoints: ['130.245.168.184'],
