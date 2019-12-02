@@ -41,7 +41,9 @@ router.get('/:username/posts',function(req,res,next){
       let result = await db.user.findOne({username});
       if(result == null)
         throw new Error("Unable to find username : "+ username);
-
+      
+      let following_array = result.posts;
+      following_array = following_array.slice(0,limit_post);
       res.status(200).send({"status": "OK","items": result.posts});
     }
     catch(e){
