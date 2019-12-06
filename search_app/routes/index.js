@@ -126,7 +126,7 @@ router.post('/search',function(req,res,next){
         boolean_query.must_not = must_not_query;
       }
 
-      const { body } = await client.search({
+      const { body } = await search_client.search({
         index: 'game',
         type: 'posts',
         size: search_limit,

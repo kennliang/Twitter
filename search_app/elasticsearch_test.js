@@ -49,7 +49,7 @@ async function run () {
   console.log(result.body.game.mappings.posts.properties.character);
   console.log(result.body.game.mappings.posts.properties.quote);*/
 
-
+/*
   await client.index({
     index: 'game',
     id: 'myid',
@@ -77,7 +77,7 @@ async function run () {
         source: "ctx._source.likes++;ctx._source.retweeted++",
       }
     },
-  });
+  });*/
  // console.log(result.body.get._source);
   //await client.indices.refresh({ index: 'game-of-thrones' });
  // console.log("ok");
@@ -97,7 +97,7 @@ async function run () {
    
   });*/
   //console.log("ok");
-  
+  /*
   await client.index({
     index: 'game',
     type: 'posts',
@@ -117,7 +117,7 @@ async function run () {
 
   // We need to force an index refresh at this point, otherwise we will not
   // get any result in the consequent search
-  await client.indices.refresh({ index: 'game' })
+  await client.indices.refresh({ index: 'game' })*/
 /*
   console.log("ok");
   const {body } = await client.search({
@@ -186,7 +186,7 @@ async function run () {
   });
   console.log(se);
   */
-  
+  /*
 let  = await client.deleteByQuery({
     index: 'game',
     type: 'posts',
@@ -216,7 +216,7 @@ const {body } = await client.search({
   }
 });
 console.log(body.hits.hits)
-
+*/
 
 /*
 await client.indices.delete({

@@ -91,7 +91,7 @@ router.post('/additem',function(req,res,next){
           if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
             throw new Error("Unable to find or update the post tha was retweeted at /additem");*/
           
-            await client.update({
+            await search_client.update({
               index: 'game',
               type: 'posts',
               id: parent,
@@ -109,7 +109,7 @@ router.post('/additem',function(req,res,next){
           if(results == null)
             throw new Error("Unable to find the post that was replyed at /additem");*/
           
-          const {body } = await client.search({
+          const {body } = await search_client.search({
             index: 'game',
             type: 'posts',
             size: 1,

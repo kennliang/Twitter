@@ -41,7 +41,7 @@ router.get('/item/:id',function(req,res,next){
       if(result == null)
         throw new Error("Unable to find the post with id "+ item_id);*/
         
-        const {body } = await client.search({
+        const {body } = await search_client.search({
           index: 'game',
           type: 'posts',
           size: 1,
@@ -163,7 +163,7 @@ router.post('/item/:id/like',function(req,res,next){
           like_status = like;
 
       
-        const {body } = await client.search({
+        const {body } = await search_client.search({
           index: 'game',
           type: 'posts',
           size: 1,
@@ -184,7 +184,7 @@ router.post('/item/:id/like',function(req,res,next){
         if(like_status){
           if(index_user == -1){
             like_array.push(username);
-            await client.update({
+            await search_client.update({
               index: 'game',
               type: 'posts',
               id: id,
@@ -206,7 +206,7 @@ router.post('/item/:id/like',function(req,res,next){
         else{
           if(index_user != -1){
             like_array.splice(index_user,1);
-            await client.update({
+            await search_client.update({
               index: 'game',
               type: 'posts',
               id: id,
