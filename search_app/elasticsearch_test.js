@@ -132,7 +132,7 @@ async function run () {
     }
   });*/
   // Let's search!
-  /*
+  
   const { body } = await client.search({
     index: 'game',
     type: 'posts',
@@ -177,7 +177,7 @@ async function run () {
       }
     }
   });
-  */
+  
 /*
   let se =await client.delete({
     id: 'myid',

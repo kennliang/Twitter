@@ -61,7 +61,8 @@ router.post('/additem',function(req,res,next){
         throw new Error("Missing content parameters at /additem")
       test++;
       //check media
-      console.log(test+"Before Media " + Date.now()/1000);
+      let date_now = Date.now()/1000;
+      console.log(test+"Before Media ");
       if(media != null && media.length != 0)
       {
         for(let i = 0; i < media.length ; i++)
@@ -80,7 +81,8 @@ router.post('/additem',function(req,res,next){
           let result = await client.execute(query,[true,media[i]],{prepare:true});
         }
       }
-      console.log(test+"After Media " + Date.now()/1000);
+      date_now = Date.now()/1000 - date_now;
+      console.log(test+"After Media " + now_date);
 
       if(childType != null && childType != '')
       {
@@ -94,7 +96,7 @@ router.post('/additem',function(req,res,next){
           if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
             throw new Error("Unable to find or update the post tha was retweeted at /additem");*/
           
-            search_client.update({
+            await search_client.update({
               index: 'game',
               type: 'posts',
               id: parent,
@@ -128,8 +130,11 @@ router.post('/additem',function(req,res,next){
         else
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
+      date_now = Date.now()/1000 - date_now;
+      console.log(test+"After checks " + now_date);
 
-      console.log(test+"After checks " + Date.now()/1000);
+
+      //console.log(test+"After checks " + Date.now()/1000);
       
       let media_value = [];
       if(media != null)
@@ -137,7 +142,7 @@ router.post('/additem',function(req,res,next){
       let new_id = shortid.generate();
       console.log()
 
-      search_client.index({
+      await search_client.index({
         index: 'game',
         type: "posts",
         id:new_id,
@@ -157,7 +162,10 @@ router.post('/additem',function(req,res,next){
         }
       });
       //create item
-      console.log(test+"After index " + Date.now()/1000);
+      //console.log(test+"After index " + Date.now()/1000);
+      date_now = Date.now()/1000 - date_now;
+      console.log(test+"After Index " + now_date);
+
       
       var postobj = { id: new_id,username: req.session.username,property : {likes : 0},retweeted: 0,content,
       timestamp : Date.now()/1000,childType: childType,parent: parent,media: media_value,likes:[],total: 0};
@@ -172,7 +180,10 @@ router.post('/additem',function(req,res,next){
       //if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
        // throw new Error("Unable to find or update the user's post at /additem");
 
-      console.log(test+"After everything " + Date.now()/1000);
+      //console.log(test+"After everything " + Date.now()/1000);
+      date_now = Date.now()/1000 - date_now;
+      console.log(test+"After Everything " + now_date);
+
       res.status(200).send({"status": "OK","id":new_id}); 
     }
     catch(e){
