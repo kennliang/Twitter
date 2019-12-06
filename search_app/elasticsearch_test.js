@@ -1,28 +1,18 @@
 const { Client } = require('@elastic/elasticsearch');
-const client = new Client({ node: 'http://152.44.37.67:9200' });
+const client = new Client({ node: 'http://152.44.42.50:9200' });
 
 
 async function run () {
 
-
+/*
     await client.indices.delete({
         index: 'game'});
-        
+        */
     await client.indices.create({
         index: 'game'
     });
 
-    const {body} = await client.search({
-      index:'game',
-      type:'posts',
-      body:{
-        "query": {
-          "match_all": {}
-      }
-      }
-    });
-
-    console.log(body.hits.hits)
+    
 
   
 
