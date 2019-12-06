@@ -135,7 +135,7 @@ router.post('/additem',function(req,res,next){
       search_client.index({
         index: 'game',
         type: "posts",
-        id:id,
+        id:new_id,
         // type: '_doc', // uncomment this line if you are using {es} ≤ 6
         body: {
           id: new_id,
