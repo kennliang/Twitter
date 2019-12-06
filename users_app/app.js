@@ -6,7 +6,9 @@ var logger = require('morgan');
 //const flash = require('connect-flash');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+
 var app = express();
+//const flash = require('connect-flash');
 //app.use(flash());
 
 var MongoClient = require('mongodb').MongoClient;

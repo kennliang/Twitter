@@ -18,6 +18,9 @@ client.connect(function(err){
   console.log("successful connection");
   console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
 });
+const { Client } = require('@elastic/elasticsearch');
+const search_client = new Client({ node: 'http://152.44.37.67:9200' });
+
 /*
 router.use(function(req,res,next){
   res.locals.authenticated = req.session.username;
@@ -80,17 +83,43 @@ router.post('/additem',function(req,res,next){
       {
         if(childType == "retweet" && parent != null)
         {
+          /*
           const query = {id: parent};
           const options = {upsert:false};
           const update_info = {$inc : {retweeted:1,total: 1}};
           let result = await db.post.updateOne(query,update_info,options);
           if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
-            throw new Error("Unable to find or update the post tha was retweeted at /additem");
+            throw new Error("Unable to find or update the post tha was retweeted at /additem");*/
+          
+            await client.update({
+              index: 'game',
+              type: 'posts',
+              id: parent,
+              body: {
+                script : {
+                  source: "ctx._source.total++;ctx._source.retweeted++",
+                }
+              },
+            });
         }
         else if(childType == "reply" && parent != null)
         {
+          /*
           let result = await db.post.findOne({id : parent});
-          if(result == null)
+          if(results == null)
+            throw new Error("Unable to find the post that was replyed at /additem");*/
+          
+          const {body } = await client.search({
+            index: 'game',
+            type: 'posts',
+            size: 1,
+            body:{
+              query:{
+                term:{id: parent}
+              }
+            }
+          });
+          if(body == null || body.hits.hits.length == 0)
             throw new Error("Unable to find the post that was replyed at /additem");
         }
         else
@@ -100,21 +129,43 @@ router.post('/additem',function(req,res,next){
       let media_value = [];
       if(media != null)
         media_value = media;
+      let new_id = shortid.generate();
+
+      await search_client.index({
+        index: 'game',
+        id: new_id,
+        type: "posts",
+        // type: '_doc', // uncomment this line if you are using {es} ≤ 6
+        body: {
+          id: new_id,
+          username: req.session.username,
+          content: content,
+          media: media_value,
+          timestamp: Date.now()/1000,
+          childType: childType,
+          parent: parent,
+          retweeted: 0,
+          property: {likes:0},
+          total:0,
+          likes: []
+        }
+      });
       //create item
-      var postobj = { id: shortid.generate(),username: req.session.username,property : {likes : 0},retweeted: 0,content,
+      /*
+      var postobj = { id: new_id,username: req.session.username,property : {likes : 0},retweeted: 0,content,
       timestamp : Date.now()/1000,childType: childType,parent: parent,media: media_value,likes:[],total: 0};
 
-      db.post.insertOne(postobj);
+      db.post.insertOne(postobj);*/
 
       //update user
       const query = { username:req.session.username};
-      const update_verified = { $push: {posts: postobj.id}};
+      const update_verified = { $push: {posts: new_id}};
       const options = {upsert:false};
       let result = await db.user.updateOne(query,update_verified,options);
       if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
         throw new Error("Unable to find or update the user's post at /additem");
 
-      res.status(200).send({"status": "OK","id":postobj.id}); 
+      res.status(200).send({"status": "OK","id":new_id}); 
     }
     catch(e){
       console.log(e);
@@ -165,6 +216,7 @@ router.post('/follow',function(req,res,next){
       res.status(500).send({"status":"error","error": e});
     }
   }
+  follow(req,res);
 });
 
 
