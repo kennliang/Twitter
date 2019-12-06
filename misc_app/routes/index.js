@@ -168,9 +168,9 @@ router.post('/additem',function(req,res,next){
       const query = { username:req.session.username};
       const update_verified = { $push: {posts: new_id}};
       const options = {upsert:false};
-      let result = await db.user.updateOne(query,update_verified,options);
-      if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
-        throw new Error("Unable to find or update the user's post at /additem");
+      let result = db.user.updateOne(query,update_verified,options);
+      //if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+       // throw new Error("Unable to find or update the user's post at /additem");
 
       console.log(test+"After everything " + Date.now()/1000);
       res.status(200).send({"status": "OK","id":new_id}); 
