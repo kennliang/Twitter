@@ -12,6 +12,18 @@ async function run () {
         index: 'game'
     });
 
+    const {body} = await client.search({
+      index:'game',
+      type:'posts',
+      body:{
+        "query": {
+          "match_all": {}
+      }
+      }
+    });
+
+    console.log(body.hits.hits)
+
   
 
     await client.indices.putMapping({

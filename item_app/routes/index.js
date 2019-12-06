@@ -74,11 +74,11 @@ router.delete('/item/:id',function(req,res,next){
         throw new Error("User is not logged in to delete item");
       
       //console.log("Deleting item with id " + item_id);
-      /*
+      
       let result = await db.post.findOneAndDelete({username: req.session.username,id:item_id});   
       if(result == null || result.value == null)
-        throw new Error("Unable to find or delete the post with id "+ item_id);*/
-
+        throw new Error("Unable to find or delete the post with id "+ item_id);
+/*
       const {body } = await search_client.search({
         index: 'game',
         type: 'posts',
@@ -100,7 +100,7 @@ router.delete('/item/:id',function(req,res,next){
       });
       if(body.hits.hits.length == 0)
         throw new Error("Unable to find or delete the post with id "+ item_id);
-
+*/
       await search_client.delete({
         id: item_id,
         index: 'game',
@@ -108,8 +108,8 @@ router.delete('/item/:id',function(req,res,next){
         type: 'posts'
       });
 
-      let result = body.hits.hits[0]._source;
-      let child_type = result.childType;
+      //let result = body.hits.hits[0]._source;
+      let child_type = result.value.childType;
       const options = {upsert:false};
       if(child_type == "retweet")
       {
@@ -121,7 +121,7 @@ router.delete('/item/:id',function(req,res,next){
           throw new Error("Unable to find or update the parent post retweet count");*/
       }
 
-      let media_array = result.media;
+      let media_array = result.value.media;
       if(media_array != null)
       {
         for(let i = 0; i < media_array.length; i++)
@@ -130,7 +130,7 @@ router.delete('/item/:id',function(req,res,next){
           await client.execute(query,[media_array[i]],{prepare:true});
         }
       }
-      const query = { username: result.username};
+      const query = { username: result.value.username};
       const update = { $pull: {posts: item_id}};
      
       let result2 = await db.user.updateOne(query,update,options);
@@ -177,7 +177,7 @@ router.post('/item/:id/like',function(req,res,next){
           throw new Error("Unable to find post with id"+ id);
         
         let like_array = body.hits.hits[0]._source.likes;
-        let num_likes = body.hits.hits[0]._source.properties.likes;
+        let num_likes = body.hits.hits[0]._source.property.likes;
         let total = body.hits.hits[0]._source.total;
         let index_user = like_array.indexOf(username);
         
@@ -191,7 +191,7 @@ router.post('/item/:id/like',function(req,res,next){
               // type: '_doc', // uncomment this line if you are using {es} ≤ 6
               body: {
                   doc:{
-                    'properties.likes': num_likes++,
+                    'property.likes': num_likes++,
                     total: total++,
                     likes: like_array
                   },
@@ -213,7 +213,7 @@ router.post('/item/:id/like',function(req,res,next){
               // type: '_doc', // uncomment this line if you are using {es} ≤ 6
               body: {
                   doc:{
-                    'properties.likes': num_likes--,
+                    'property.likes': num_likes--,
                     total: total--,
                     likes: like_array
                   },

@@ -91,7 +91,7 @@ router.post('/additem',function(req,res,next){
           if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
             throw new Error("Unable to find or update the post tha was retweeted at /additem");*/
           
-            await search_client.update({
+            search_client.update({
               index: 'game',
               type: 'posts',
               id: parent,
@@ -104,11 +104,11 @@ router.post('/additem',function(req,res,next){
         }
         else if(childType == "reply" && parent != null)
         {
-          /*
-          let result = await db.post.findOne({id : parent});
-          if(results == null)
-            throw new Error("Unable to find the post that was replyed at /additem");*/
           
+          let results = await db.post.findOne({id : parent});
+          if(results == null)
+            throw new Error("Unable to find the post that was replyed at /additem");
+          /*
           const {body } = await search_client.search({
             index: 'game',
             type: 'posts',
@@ -120,7 +120,7 @@ router.post('/additem',function(req,res,next){
             }
           });
           if(body == null || body.hits.hits.length == 0)
-            throw new Error("Unable to find the post that was replyed at /additem");
+            throw new Error("Unable to find the post that was replyed at /additem");*/
         }
         else
           throw new Error("Either childType is not correct string or parent is null at /additem");
@@ -132,9 +132,8 @@ router.post('/additem',function(req,res,next){
       let new_id = shortid.generate();
       console.log()
 
-      await search_client.index({
+      search_client.index({
         index: 'game',
-        id: new_id,
         type: "posts",
         // type: '_doc', // uncomment this line if you are using {es} ≤ 6
         body: {
@@ -152,11 +151,11 @@ router.post('/additem',function(req,res,next){
         }
       });
       //create item
-      /*
+      
       var postobj = { id: new_id,username: req.session.username,property : {likes : 0},retweeted: 0,content,
       timestamp : Date.now()/1000,childType: childType,parent: parent,media: media_value,likes:[],total: 0};
 
-      db.post.insertOne(postobj);*/
+      db.post.insertOne(postobj);
 
       //update user
       const query = { username:req.session.username};
