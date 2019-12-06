@@ -53,8 +53,10 @@ router.post('/adduser', function(req, res, next) {
           transporter.sendMail(mailOptions, function(error, info){
             if(error)
               throw new Error(error);
-            res.status(200).send({"status": "OK"});
+           // res.status(200).send({"status": "OK"});
           });
+
+          res.status(200).send({"status": "OK"});
     }
     catch(e){
       console.log("Try catch error at adduser "+ e);
