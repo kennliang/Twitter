@@ -47,6 +47,7 @@ router.get('/additem',function(req,res,next){
   
 });
 
+let test = 0;
 
 router.post('/additem',function(req,res,next){
   const add_item = async function(req,res){
@@ -58,8 +59,9 @@ router.post('/additem',function(req,res,next){
         throw new Error("User is not logged in to add item at /additem")
       if(content == null)
         throw new Error("Missing content parameters at /additem")
-    
+      test++;
       //check media
+      console.log(test+"Before Media " + Date.now()/1000);
       if(media != null && media.length != 0)
       {
         for(let i = 0; i < media.length ; i++)
@@ -78,6 +80,7 @@ router.post('/additem',function(req,res,next){
           let result = await client.execute(query,[true,media[i]],{prepare:true});
         }
       }
+      console.log(test+"After Media " + Date.now()/1000);
 
       if(childType != null && childType != '')
       {
@@ -125,6 +128,8 @@ router.post('/additem',function(req,res,next){
         else
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
+
+      console.log(test+"After checks " + Date.now()/1000);
       
       let media_value = [];
       if(media != null)
@@ -152,6 +157,7 @@ router.post('/additem',function(req,res,next){
         }
       });
       //create item
+      console.log(test+"After index " + Date.now()/1000);
       
       var postobj = { id: new_id,username: req.session.username,property : {likes : 0},retweeted: 0,content,
       timestamp : Date.now()/1000,childType: childType,parent: parent,media: media_value,likes:[],total: 0};
@@ -166,6 +172,7 @@ router.post('/additem',function(req,res,next){
       if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
         throw new Error("Unable to find or update the user's post at /additem");
 
+      console.log(test+"After everything " + Date.now()/1000);
       res.status(200).send({"status": "OK","id":new_id}); 
     }
     catch(e){
