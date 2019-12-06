@@ -30,7 +30,6 @@ async function run () {
                 childType: {type: 'keyword'},
                 parent: {type: 'keyword'},
                 retweeted: {type: 'integer'},
-                property: {type:'integer'},
                 total: {type:'integer'},
                 likes: {type:'keyword'}
               }

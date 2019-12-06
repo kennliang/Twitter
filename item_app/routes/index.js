@@ -54,7 +54,7 @@ router.get('/item/:id',function(req,res,next){
         if(body == null || body.hits.hits.length == 0)
           throw new Error("Unable to find the post with id "+ item_id);
         let result = body.hits.hits[0]._source;
-        result.properties.likes = result.likes;
+        result.property.likes = result.likes;
       res.status(200).send({"status": "OK","item":result});
     }
     catch(e){

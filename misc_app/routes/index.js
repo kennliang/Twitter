@@ -130,6 +130,7 @@ router.post('/additem',function(req,res,next){
       if(media != null)
         media_value = media;
       let new_id = shortid.generate();
+      console.log()
 
       await search_client.index({
         index: 'game',
