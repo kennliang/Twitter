@@ -4,10 +4,10 @@ const client = new Client({ node: 'http://152.44.37.110:9200' });
 
 async function run () {
 
-
+/*
     await client.indices.delete({
         index: 'game'});
-        
+        */
     await client.indices.create({
         index: 'game'
     });
