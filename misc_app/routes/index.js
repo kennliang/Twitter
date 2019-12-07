@@ -82,7 +82,7 @@ router.post('/additem',function(req,res,next){
         }
       }
       date_now = Date.now() - date_now;
-      console.log(test+"After Media " + now_date);
+      console.log(test+"After Media " + date_now);
 
       if(childType != null && childType != '')
       {
@@ -131,7 +131,7 @@ router.post('/additem',function(req,res,next){
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
       date_now = Date.now() - date_now;
-      console.log(test+"After checks " + now_date);
+      console.log(test+"After checks " + date_now);
 
 
       //console.log(test+"After checks " + Date.now()/1000);
@@ -164,7 +164,7 @@ router.post('/additem',function(req,res,next){
       //create item
       //console.log(test+"After index " + Date.now()/1000);
       date_now = Date.now() - date_now;
-      console.log(test+"After Index " + now_date);
+      console.log(test+"After Index " + date_now);
 
       
       var postobj = { id: new_id,username: req.session.username,property : {likes : 0},retweeted: 0,content,
@@ -182,7 +182,7 @@ router.post('/additem',function(req,res,next){
 
       //console.log(test+"After everything " + Date.now()/1000);
       date_now = Date.now() - date_now;
-      console.log(test+"After Everything " + now_date);
+      console.log(test+"After Everything " + date_now);
 
       res.status(200).send({"status": "OK","id":new_id}); 
     }
