@@ -19,7 +19,7 @@ client.connect(function(err){
   console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
 });
 const { Client } = require('@elastic/elasticsearch');
-const search_client = new Client({ node: 'http://152.44.42.50:9200' });
+const search_client = new Client({ node: 'http://152.44.41.59:9200' });
 /*
 router.use(function(req,res,next){
   res.locals.authenticated = req.session.username;

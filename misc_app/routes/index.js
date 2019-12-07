@@ -19,7 +19,7 @@ client.connect(function(err){
   console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
 });
 const { Client } = require('@elastic/elasticsearch');
-const search_client = new Client({ node: 'http://152.44.42.50:9200' });
+const search_client = new Client({ node: 'http://152.44.41.59:9200' });
 
 /*
 router.use(function(req,res,next){
@@ -61,7 +61,7 @@ router.post('/additem',function(req,res,next){
         throw new Error("Missing content parameters at /additem")
       test++;
       //check media
-      let date_now = Date.now()/1000;
+      let date_now = Date.now();
       console.log(test+"Before Media ");
       if(media != null && media.length != 0)
       {
@@ -81,7 +81,7 @@ router.post('/additem',function(req,res,next){
           let result = await client.execute(query,[true,media[i]],{prepare:true});
         }
       }
-      date_now = Date.now()/1000 - date_now;
+      date_now = Date.now() - date_now;
       console.log(test+"After Media " + now_date);
 
       if(childType != null && childType != '')
@@ -130,7 +130,7 @@ router.post('/additem',function(req,res,next){
         else
           throw new Error("Either childType is not correct string or parent is null at /additem");
       }
-      date_now = Date.now()/1000 - date_now;
+      date_now = Date.now() - date_now;
       console.log(test+"After checks " + now_date);
 
 
@@ -163,7 +163,7 @@ router.post('/additem',function(req,res,next){
       });
       //create item
       //console.log(test+"After index " + Date.now()/1000);
-      date_now = Date.now()/1000 - date_now;
+      date_now = Date.now() - date_now;
       console.log(test+"After Index " + now_date);
 
       
@@ -176,12 +176,12 @@ router.post('/additem',function(req,res,next){
       const query = { username:req.session.username};
       const update_verified = { $push: {posts: new_id}};
       const options = {upsert:false};
-      let result = db.user.updateOne(query,update_verified,options);
-      //if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
-       // throw new Error("Unable to find or update the user's post at /additem");
+      let result = await db.user.updateOne(query,update_verified,options);
+      if(result == null || result.matchedCount == 0 || result.modifiedCount == 0)
+        throw new Error("Unable to find or update the user's post at /additem");
 
       //console.log(test+"After everything " + Date.now()/1000);
-      date_now = Date.now()/1000 - date_now;
+      date_now = Date.now() - date_now;
       console.log(test+"After Everything " + now_date);
 
       res.status(200).send({"status": "OK","id":new_id}); 

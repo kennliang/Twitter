@@ -1,5 +1,5 @@
 const { Client } = require('@elastic/elasticsearch');
-const client = new Client({ node: 'http://152.44.42.50:9200' });
+const client = new Client({ node: 'http://152.44.41.59:9200' });
 
 
 async function run () {
@@ -132,7 +132,7 @@ async function run () {
     }
   });*/
   // Let's search!
-  
+  /*
   const { body } = await client.search({
     index: 'game',
     type: 'posts',
@@ -177,7 +177,7 @@ async function run () {
       }
     }
   });
-  
+  */
 /*
   let se =await client.delete({
     id: 'myid',
