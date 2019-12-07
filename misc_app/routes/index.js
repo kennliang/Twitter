@@ -3,7 +3,7 @@ var router = express.Router();
 const shortid = require('shortid');
 var fs = require('fs');
 var multer = require('multer');
-var upload = multer({dest: 'uploads/'});cd
+var upload = multer({dest: 'uploads/'});
 const cassandra = require('cassandra-driver');
 const util = require('util');
 
