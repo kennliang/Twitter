@@ -3,7 +3,7 @@ var router = express.Router();
 const shortid = require('shortid');
 var fs = require('fs');
 var multer = require('multer');
-var upload = multer({dest: 'uploads/'});
+var upload = multer({dest: 'uploads/'});cd
 const cassandra = require('cassandra-driver');
 const util = require('util');
 
@@ -19,7 +19,7 @@ client.connect(function(err){
   console.log('Connected to cluster with %d host(s): %j', client.hosts.length, client.hosts.keys());
 });
 const { Client } = require('@elastic/elasticsearch');
-const search_client = new Client({ node: 'http://152.44.41.59:9200' });
+const search_client = new Client({ node: 'http://152.44.37.110:9200' });
 
 /*
 router.use(function(req,res,next){

@@ -1,5 +1,5 @@
 const { Client } = require('@elastic/elasticsearch');
-const client = new Client({ node: 'http://152.44.41.59:9200' });
+const client = new Client({ node: 'http://152.44.37.110:9200' });
 
 
 async function run () {
