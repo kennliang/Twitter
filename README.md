@@ -140,18 +140,18 @@ Gets contents of an item ID.
 
 ```json
 {
-  item: {
-    id: item ID string
-    username: username who sent item
-    property:{
-      likes: number
-    }
-    retweeted: number
-    content: body of item (original content if retweet)
-    timestamp: timestamp represented as Unix time
-    childType: string ("retweet" or "reply") null if not child item
-    parent: parent ID (can be null, empty, or left out)
-    media: array of IDs of associated media files
+  "item": {
+    "id": "item2",
+    "username": "usertest1",
+    "property":{
+      "likes": 2,
+    },
+    "retweeted": 1,
+    "content": "body of item (original content if retweet)",
+    "timestamp": 1622770962,
+    "childType": "retweet",
+    "parent": "item1",
+    "media": ["media1","media2"],
   }
 }
 ```
@@ -181,10 +181,10 @@ Get username profile information
 
 ```json
 {
-  user: {
-    email: string
-    followers: follower count
-    following: following count
+  "user": {
+    "email": "test1@stonybrook.edu",
+    "followers": 5,
+    "following": 2,
   }
 }
 ```
