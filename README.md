@@ -20,6 +20,7 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
+    <li><a href="#system-design">System Design</a></li>
     <li>
       <a href="#api-documentation">API Documentation</a>
        <ul>
@@ -32,7 +33,6 @@
       </ul>
     </li>
     <li><a href="#installation">Installation</a></li>
-    <li><a href="#system-design">System Design</a></li>
     <li><a href="#tests-and-todos">Tests and TODOs</a></li>
 
   </ol>
@@ -58,6 +58,14 @@ Based on the system design, the system handled up to 10k concurrent simulated us
 * [PM2](https://pm2.keymetrics.io/) Process manager for Node.js
 
 ***
+
+
+## System Design
+ **Scale accordingly based on where bottlenecks are. To provide high availability and fault tolerant system, one can introduce replication (Not shown in diagram). You can run multiple instances of each service and allow the API Gateway to distribute requests evenly among the instances or redirect to healthy instances due to faults. For more information on sharding in MongoDB, visit https://docs.mongodb.com/manual/sharding/**
+
+ ![System Design](Images/system-design.png)
+
+ ***
 
 ## API Documentation
 
@@ -314,11 +322,6 @@ Reset database systems
 * https://pm2.keymetrics.io/docs/usage/quick-start/
 * https://redis.io/topics/quickstart
 * https://www.nginx.com/resources/wiki/start/
-
-***
-## System Design
- 
- TODO
 
 ***
 ## Tests and TODOs
