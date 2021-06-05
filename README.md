@@ -17,6 +17,7 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
+        <li><a href="#features">Features</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -46,6 +47,14 @@
 This project is a Twitter Clone REST API designed to learn about scalable distributed systems and REST services using free open source technologies.
 
 Based on the system design, the system handled up to 10k concurrent simulated users and a total of 200k API requests. To have a accurate scalability test, no more than 20 vCPU machines are necessary to pass the test.
+
+### Features
+* User registration and email verification
+* User session
+* Posting/Replying tweets, retweets, like/dislike rtweets
+* Following and unfollowing users
+* Searching and filtering tweets
+* Uploading large media files (Images and Videos)
 
 
 ### Built With
